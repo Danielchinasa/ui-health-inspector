@@ -119,6 +119,8 @@ export interface ScanMetadata {
     userAgent: string;
     viewport: { width: number; height: number };
   };
+  totalIssues: number;
+  executionTime: number; // milliseconds
 }
 
 // ============================================================================

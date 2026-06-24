@@ -7,10 +7,11 @@
 import type { Message, ScanResult, ToggleHighlightsMessage, FocusIssueMessage } from '@/types';
 import { MessageType } from '@/types';
 
-import { createLogger } from '@/utils/logger';
+import { createLogger, perfMonitor } from '@/utils/logger';
 import { createMessage, onMessage, sendToBackground } from '@/utils/messaging';
-import { perfMonitor } from '@/utils/logger';
 import { getPageMetadata } from '@/utils/dom';
+import { orchestrator } from '@/scanners';
+import { MockScanner } from '@/scanners/mock-scanner';
 
 const logger = createLogger('Content');
 
@@ -28,6 +29,10 @@ function initialize() {
 
   logger.info('Initializing content script');
   isInitialized = true;
+
+  // Register mock scanner for Phase 2 testing
+  // Phase 4 will replace this with real scanners
+  orchestrator.registerScanner(new MockScanner(3, 200));
 
   // Set up message listeners
   setupMessageListeners();
@@ -73,48 +78,26 @@ function setupMessageListeners() {
  * Handle scan execution
  */
 async function handleScan(): Promise<ScanResult> {
-  logger.info('Starting scan...');
+  logger.info('Starting page scan');
   perfMonitor.start('full_scan');
 
   try {
-    // TODO: Phase 2 - Scanner execution will be implemented here
-    // For now, return mock data for infrastructure testing
-
-    const metadata = getPageMetadata();
-
-    const mockResult: ScanResult = {
-      url: metadata.url,
-      timestamp: Date.now(),
-      healthScore: 100,
-      issues: {
-        deadButtons: [],
-        brokenLinks: [],
-        missingImages: [],
-        overflowIssues: [],
-        accessibility: [],
-        consoleErrors: [],
-      },
-      metadata: {
-        scanDuration: 0,
-        domElementCount: metadata.domElementCount,
-        scannersExecuted: [],
-        browserInfo: {
-          userAgent: metadata.userAgent,
-          viewport: metadata.viewport,
-        },
-      },
-    };
+    // Execute scan using orchestrator (Phase 2 implementation)
+    const result = await orchestrator.scan({
+      strategy: 'parallel',
+    });
 
     const duration = perfMonitor.end('full_scan');
-    mockResult.metadata.scanDuration = duration;
-
-    logger.info(`Scan completed in ${duration.toFixed(2)}ms`);
+    logger.info(
+      `Scan completed in ${duration.toFixed(2)}ms - Found ${result.metadata.totalIssues} issues, health score: ${result.healthScore}`
+    );
 
     // Save result to storage
-    await sendToBackground(createMessage(MessageType.SAVE_SCAN_RESULT, mockResult));
+    await sendToBackground(createMessage(MessageType.SAVE_SCAN_RESULT, result));
 
-    return mockResult;
+    return result;
   } catch (error) {
+    perfMonitor.end('full_scan');
     logger.error('Scan failed:', error);
     throw error;
   }
