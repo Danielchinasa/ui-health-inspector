@@ -18,12 +18,7 @@ export class MockScanner extends BaseScanner {
     private issueCount: number = 3,
     private delay: number = 100
   ) {
-    super(
-      IssueType.DEAD_BUTTON,
-      'Mock Scanner',
-      'Mock scanner for testing scanner engine',
-      delay
-    );
+    super(IssueType.DEAD_BUTTON, 'Mock Scanner', 'Mock scanner for testing scanner engine', delay);
   }
 
   async scan(): Promise<BaseIssue[]> {
@@ -79,12 +74,7 @@ export class SlowMockScanner extends MockScanner {
  */
 export class FailingMockScanner extends BaseScanner {
   constructor() {
-    super(
-      IssueType.CONSOLE_ERROR,
-      'Failing Mock Scanner',
-      'Mock scanner that always fails',
-      100
-    );
+    super(IssueType.CONSOLE_ERROR, 'Failing Mock Scanner', 'Mock scanner that always fails', 100);
   }
 
   async scan(): Promise<BaseIssue[]> {

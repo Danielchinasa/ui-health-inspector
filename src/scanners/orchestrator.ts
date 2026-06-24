@@ -181,9 +181,7 @@ class ScannerOrchestrator {
   /**
    * Determine best execution strategy based on scanners
    */
-  private determineStrategy(
-    scanners: ScannerContract[]
-  ): 'parallel' | 'sequential' | 'chunked' {
+  private determineStrategy(scanners: ScannerContract[]): 'parallel' | 'sequential' | 'chunked' {
     const totalEstimatedTime = scanners.reduce(
       (sum, scanner) => sum + scanner.getEstimatedTime(),
       0

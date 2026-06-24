@@ -81,9 +81,7 @@ export function aggregateResults(
     metadata,
   };
 
-  logger.info(
-    `Aggregation complete: ${metadata.totalIssues} issues, health score: ${healthScore}`
-  );
+  logger.info(`Aggregation complete: ${metadata.totalIssues} issues, health score: ${healthScore}`);
 
   return result;
 }

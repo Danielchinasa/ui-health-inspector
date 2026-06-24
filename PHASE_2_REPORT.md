@@ -41,6 +41,7 @@ export interface ScannerContract {
 ```
 
 This contract ensures:
+
 - Consistent scanner behavior across implementations
 - Type-safe scanner registration and execution
 - Predictable execution time estimation
@@ -53,6 +54,7 @@ This contract ensures:
 Implemented a singleton registry managing all scanners:
 
 **Key Features:**
+
 - Scanner registration and unregistration
 - Enable/disable functionality for runtime control
 - Retrieval of all or only enabled scanners
@@ -60,6 +62,7 @@ Implemented a singleton registry managing all scanners:
 - Thread-safe singleton pattern
 
 **Methods:**
+
 - `register(scanner)` - Add scanner to registry
 - `unregister(type)` - Remove scanner
 - `enable(type)` / `disable(type)` - Toggle scanner state
@@ -94,6 +97,7 @@ Built robust execution engine with multiple strategies:
    - Progressive result delivery
 
 **Features:**
+
 - Timeout support with configurable limits
 - Abort signal support for cancellation
 - Retry mechanism with exponential backoff
@@ -102,6 +106,7 @@ Built robust execution engine with multiple strategies:
 - Detailed execution metrics
 
 **Error Handling:**
+
 - Graceful failure handling (scan continues on errors)
 - Detailed error reporting with stack traces
 - Timeout detection and reporting
@@ -143,6 +148,7 @@ Implemented sophisticated result processing:
    - Statistical summaries
 
 **Health Score Calculation:**
+
 - Starts at 100 (perfect score)
 - Deducts points based on issue severity and type
 - Current implementation (Phase 2):
@@ -162,6 +168,7 @@ Implemented sophisticated result processing:
 High-level API for scan coordination:
 
 **Features:**
+
 - Intelligent strategy selection based on scanner count
 - Automatic scanner retrieval from registry
 - Progress tracking and callbacks
@@ -170,16 +177,19 @@ High-level API for scan coordination:
 - Performance optimization
 
 **Strategy Auto-Selection:**
+
 - 1-3 scanners: Parallel execution
 - 4-10 scanners: Chunked execution (chunks of 3)
 - 11+ scanners: Chunked execution (chunks of 5)
 
 **Methods:**
+
 - `scan(options)` - Execute full scan
 - `cancelScan()` - Abort running scan
 - `registerScanner(scanner)` - Convenience method for registration
 
 **Scan Options:**
+
 ```typescript
 {
   strategy?: 'parallel' | 'sequential' | 'chunked';
@@ -196,6 +206,7 @@ High-level API for scan coordination:
 Abstract class for scanner implementations:
 
 **Benefits:**
+
 - Implements `ScannerContract` interface
 - Provides lifecycle hooks (`beforeScan`, `afterScan`)
 - Enforces consistent scanner structure
@@ -203,6 +214,7 @@ Abstract class for scanner implementations:
 - Enables middleware patterns
 
 **Usage:**
+
 ```typescript
 class CustomScanner extends BaseScanner {
   constructor() {
@@ -245,6 +257,7 @@ Testing utilities with multiple variants:
 Updated to use scanner orchestrator:
 
 **Changes:**
+
 - Imported orchestrator and MockScanner
 - Registered MockScanner in `initialize()`
 - Updated `handleScan()` to use `orchestrator.scan()`
@@ -252,6 +265,7 @@ Updated to use scanner orchestrator:
 - Added comprehensive logging
 
 **Current Flow:**
+
 1. Initialize content script
 2. Register MockScanner for testing
 3. When scan requested:
@@ -268,6 +282,7 @@ Updated to use scanner orchestrator:
 Added 22 comprehensive unit tests across 3 new test files:
 
 **tests/scanners/registry.test.ts** (12 tests)
+
 - Scanner registration and unregistration
 - Enable/disable functionality
 - Scanner retrieval (all/enabled)
@@ -275,6 +290,7 @@ Added 22 comprehensive unit tests across 3 new test files:
 - Edge case handling
 
 **tests/scanners/executor.test.ts** (6 tests)
+
 - Successful scanner execution
 - Error handling and graceful failures
 - Timeout enforcement
@@ -283,6 +299,7 @@ Added 22 comprehensive unit tests across 3 new test files:
 - Mixed success/failure scenarios
 
 **tests/scanners/aggregator.test.ts** (4 tests)
+
 - Result aggregation
 - Health score calculation
 - Issue deduplication
@@ -326,12 +343,13 @@ export interface ScanMetadata {
     userAgent: string;
     viewport: { width: number; height: number };
   };
-  totalIssues: number;      // NEW
-  executionTime: number;    // NEW
+  totalIssues: number; // NEW
+  executionTime: number; // NEW
 }
 ```
 
 These additions enable:
+
 - Quick issue count access
 - Performance tracking
 - Progress reporting
@@ -343,11 +361,11 @@ These additions enable:
 
 Benchmarked with MockScanners:
 
-| Strategy | Scanners | Execution Time | Memory | Best For |
-|----------|----------|----------------|--------|----------|
-| Parallel | 3 | ~200ms | Medium | Fast, independent scanners |
-| Sequential | 3 | ~600ms | Low | Heavy scanners, resource-limited |
-| Chunked (3) | 9 | ~800ms | Medium-Low | Balanced performance |
+| Strategy    | Scanners | Execution Time | Memory     | Best For                         |
+| ----------- | -------- | -------------- | ---------- | -------------------------------- |
+| Parallel    | 3        | ~200ms         | Medium     | Fast, independent scanners       |
+| Sequential  | 3        | ~600ms         | Low        | Heavy scanners, resource-limited |
+| Chunked (3) | 9        | ~800ms         | Medium-Low | Balanced performance             |
 
 ### Optimizations Implemented
 
@@ -425,6 +443,7 @@ None identified. Code is production-ready and well-structured.
 ### Phase 3: UI/UX Design & Popup Interface
 
 **Objectives:**
+
 1. Design comprehensive popup UI
 2. Implement scan trigger and controls
 3. Display health score with visual indicators
@@ -435,6 +454,7 @@ None identified. Code is production-ready and well-structured.
 8. Create scan history view
 
 **Deliverables:**
+
 - Complete popup React components
 - State management with Zustand
 - CSS styling with responsive design

@@ -60,7 +60,9 @@ export async function executeScanner(
 
     const executionTime = perfMonitor.end(perfLabel);
 
-    logger.info(`Scanner ${scanner.name} completed in ${executionTime}ms, found ${issues.length} issues`);
+    logger.info(
+      `Scanner ${scanner.name} completed in ${executionTime}ms, found ${issues.length} issues`
+    );
 
     return {
       scanner: scanner.name,
@@ -93,9 +95,7 @@ export async function executeScannersParallel(
 ): Promise<ScannerResult[]> {
   logger.info(`Executing ${scanners.length} scanners in parallel`);
 
-  const results = await Promise.all(
-    scanners.map((scanner) => executeScanner(scanner, options))
-  );
+  const results = await Promise.all(scanners.map((scanner) => executeScanner(scanner, options)));
 
   const successful = results.filter((r) => r.success).length;
   logger.info(`Completed ${successful}/${scanners.length} scanners successfully`);
