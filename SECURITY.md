@@ -41,24 +41,28 @@ Please provide the following information:
 UI Health Inspector implements multiple security layers:
 
 ### Manifest V3 Compliance
+
 - Service workers instead of background pages
 - Declarative permissions
 - No remote code execution
 - Strict Content Security Policy
 
 ### Input Validation
+
 - All inputs validated and sanitized
 - Type checking with TypeScript
 - Runtime validation for messages and data
 - Maximum size limits enforced
 
 ### XSS Prevention
+
 - HTML sanitization in DOM utilities
 - No use of `innerHTML` with user data
 - No `eval()` or `Function()` constructors
 - Script tag removal in content processing
 
 ### Permissions
+
 - Minimal permissions requested
 - `activeTab` for current page access only
 - `storage` for local data only
@@ -66,6 +70,7 @@ UI Health Inspector implements multiple security layers:
 - No `<all_urls>` in permissions (only in host_permissions for scanning)
 
 ### Data Privacy
+
 - No data sent to external servers
 - All processing done locally in browser
 - Storage only in Chrome's local storage
@@ -73,6 +78,7 @@ UI Health Inspector implements multiple security layers:
 - No third-party dependencies in runtime code
 
 ### Origin Verification
+
 - All messages verified for sender origin
 - Tab ID validation
 - Extension ID verification
@@ -90,7 +96,7 @@ UI Health Inspector implements multiple security layers:
 ## ⏱️ Response Timeline
 
 - **Critical vulnerabilities**: Fix within 7 days
-- **High severity**: Fix within 14 days  
+- **High severity**: Fix within 14 days
 - **Medium severity**: Fix within 30 days
 - **Low severity**: Fix in next regular release
 
@@ -136,13 +142,14 @@ For contributors:
 
 ## 📜 Security Changelog
 
-| Date | Version | Severity | Description |
-|------|---------|----------|-------------|
-| 2026-06-24 | 1.0.0 | - | Initial release with security-first design |
+| Date       | Version | Severity | Description                                |
+| ---------- | ------- | -------- | ------------------------------------------ |
+| 2026-06-24 | 1.0.0   | -        | Initial release with security-first design |
 
 ## 📧 Contact
 
 For security-related questions that are not vulnerabilities, you can:
+
 - Open a GitHub Discussion
 - Check the documentation
 - Contact the maintainers

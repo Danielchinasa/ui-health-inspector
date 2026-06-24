@@ -47,6 +47,7 @@ Paste console errors here
 ## 📝 Additional Context
 
 Add any other context about the problem here. For example:
+
 - Does this happen on all websites or specific ones?
 - Does it happen consistently or intermittently?
 - Have you tried any workarounds?

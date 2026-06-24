@@ -5,6 +5,7 @@
 ## 🔗 Related Issue
 
 <!-- Link to the issue this PR addresses -->
+
 Closes #
 
 ## 🎯 Type of Change
@@ -30,7 +31,8 @@ Closes #
 - [ ] I have tested the extension in Chrome
 
 **Test Configuration:**
-- OS: 
+
+- OS:
 - Browser: Chrome [version]
 - Node version:
 

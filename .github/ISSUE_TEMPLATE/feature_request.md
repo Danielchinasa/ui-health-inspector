@@ -20,6 +20,7 @@ What problem does this feature solve? Why is it needed?
 ## 🔧 Proposed Solution
 
 Describe how you envision this feature working:
+
 - What would trigger it?
 - What would it scan for?
 - How would results be displayed?
@@ -28,6 +29,7 @@ Describe how you envision this feature working:
 ## 🎨 UI/UX Considerations
 
 If this affects the user interface:
+
 - Where would this appear in the extension?
 - How would users interact with it?
 - Include mockups or wireframes if possible
@@ -35,6 +37,7 @@ If this affects the user interface:
 ## 🔐 Security Considerations
 
 Does this feature involve:
+
 - [ ] Access to additional web page data
 - [ ] New permissions required
 - [ ] External API calls
@@ -47,10 +50,12 @@ If yes, please describe the security implications and how they could be mitigate
 Provide examples of what this feature would detect or do:
 
 **Example 1:**
+
 - Input: [what the scanner encounters]
 - Expected Output: [what the scanner should report]
 
 **Example 2:**
+
 - Input: [another scenario]
 - Expected Output: [expected result]
 
@@ -81,6 +86,7 @@ How important is this feature to you?
 ## 📚 Additional Context
 
 Add any other context, references, or resources about the feature request here:
+
 - Links to similar features in other tools
 - Research papers or articles
 - WCAG guidelines (for accessibility features)
