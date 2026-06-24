@@ -1,0 +1,17 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle -->
+  <circle cx="256" cy="256" r="240" fill="#7C3AED"/>
+  
+  <!-- Magnifying glass handle -->
+  <rect x="320" y="320" width="120" height="40" rx="20" fill="#FFFFFF" transform="rotate(45 320 320)"/>
+  
+  <!-- Magnifying glass circle -->
+  <circle cx="200" cy="200" r="100" fill="none" stroke="#FFFFFF" stroke-width="24"/>
+  
+  <!-- Checkmark inside magnifying glass -->
+  <path d="M160 200 L185 225 L240 170" stroke="#FFFFFF" stroke-width="20" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  
+  <!-- Small medical cross for health theme -->
+  <rect x="370" y="110" width="16" height="48" rx="4" fill="#FFFFFF"/>
+  <rect x="354" y="126" width="48" height="16" rx="4" fill="#FFFFFF"/>
+</svg>
