@@ -164,7 +164,7 @@ We welcome contributions! Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for gu
 ### Ways to Contribute
 
 - 🐛 **Report bugs** - Open issues for bugs you find
-- 💡 **Suggest features** - Share ideas for new scanners or improvements  
+- 💡 **Suggest features** - Share ideas for new scanners or improvements
 - 📝 **Improve docs** - Help make documentation clearer
 - 🧪 **Write tests** - Increase test coverage
 - 🔧 **Submit PRs** - Implement features from the roadmap

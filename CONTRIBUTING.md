@@ -72,6 +72,7 @@ pnpm lint
 ### Security Requirements
 
 All contributions must:
+
 - ✅ Validate and sanitize all inputs
 - ✅ Prevent XSS and injection attacks
 - ✅ Follow Manifest V3 best practices
@@ -86,13 +87,15 @@ All contributions must:
 4. **Update documentation** if needed
 5. **Run the full test suite**: `pnpm test && pnpm type-check && pnpm lint`
 6. **Commit with clear messages**:
+
    ```
    feat(scanner): add dead button detection algorithm
-   
+
    - Implement click event listener detection
    - Add tests for edge cases
    - Update documentation
    ```
+
 7. **Push to your fork** and submit a pull request
 8. **Respond to feedback** from maintainers
 
@@ -107,6 +110,7 @@ All contributions must:
 ```
 
 **Types:**
+
 - `feat` - New feature
 - `fix` - Bug fix
 - `docs` - Documentation
@@ -116,6 +120,7 @@ All contributions must:
 - `chore` - Maintain
 
 **Example:**
+
 ```
 feat(scanner): add overflow detection
 
@@ -154,6 +159,7 @@ All tests must pass before merging.
 ## 📚 Documentation
 
 When adding features:
+
 - Update relevant docs in `docs/`
 - Add JSDoc comments to functions
 - Update README if needed
@@ -162,6 +168,7 @@ When adding features:
 ## 🐛 Bug Reports
 
 Use GitHub Issues with:
+
 - Clear title and description
 - Steps to reproduce
 - Expected vs actual behavior
@@ -171,6 +178,7 @@ Use GitHub Issues with:
 ## 💡 Feature Requests
 
 Before proposing features:
+
 - Check existing issues and roadmap
 - Align with phased approach
 - Consider security implications
@@ -187,6 +195,7 @@ By contributing, you agree that your contributions will be licensed under the MI
 ## 🙏 Recognition
 
 Contributors will be recognized in:
+
 - GitHub contributors page
 - Release notes for significant contributions
 - Project documentation

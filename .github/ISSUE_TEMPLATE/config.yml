@@ -1,0 +1,11 @@
+blank_issues_enabled: true
+contact_links:
+  - name: 💬 GitHub Discussions
+    url: https://github.com/YOUR_USERNAME/ui-health-inspector/discussions
+    about: Ask questions and discuss ideas with the community
+  - name: 📖 Documentation
+    url: https://github.com/YOUR_USERNAME/ui-health-inspector/blob/main/README.md
+    about: Read the project documentation and guides
+  - name: 🔒 Security Vulnerability
+    url: https://github.com/YOUR_USERNAME/ui-health-inspector/security/policy
+    about: Report security vulnerabilities privately (do not open public issues)
