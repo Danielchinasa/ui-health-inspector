@@ -22,6 +22,62 @@ import { usePopupStore } from '@/store/popup';
 
 const logger = createLogger('Popup');
 
+/**
+ * Get health status message based on score
+ */
+function getHealthStatus(score: number | undefined): {
+  label: string;
+  emoji: string;
+  message: string;
+  className: string;
+} {
+  if (score === undefined) {
+    return {
+      label: 'Unknown',
+      emoji: '🔍',
+      message: 'Scan this page to check its health.',
+      className: 'unknown',
+    };
+  }
+
+  if (score >= 90) {
+    return {
+      label: 'Excellent',
+      emoji: '🎉',
+      message: 'Your page is in great shape! Minimal issues found.',
+      className: 'excellent',
+    };
+  } else if (score >= 70) {
+    return {
+      label: 'Good',
+      emoji: '😊',
+      message: 'Your page is healthy, but some issues need attention.',
+      className: 'good',
+    };
+  } else if (score >= 50) {
+    return {
+      label: 'Fair',
+      emoji: '😐',
+      message: 'Several issues detected that could impact user experience.',
+      className: 'fair',
+    };
+  } else if (score >= 30) {
+    return {
+      label: 'Poor',
+      emoji: '😟',
+      message: 'Multiple issues found that need immediate attention.',
+      className: 'poor',
+    };
+  } else {
+    return {
+      label: 'Critical',
+      emoji: '🔴',
+      message: 'Significant issues detected affecting page quality.',
+      className: 'critical',
+    };
+  }
+}
+
 function IndexPopup() {
   usePopupInit();
 
@@ -83,6 +139,8 @@ function ScanView() {
   const { startScan } = useScanAction();
   const { highlightsEnabled, toggleHighlights } = useHighlights();
 
+  const healthStatus = getHealthStatus(currentScan?.healthScore);
+
   return (
     <div className="scan-view">
       <div className="card-wrapper">
@@ -117,13 +175,11 @@ function ScanView() {
             </div>
 
             <div className="score-right">
-              <div className="score-status good">
-                Good
-                <span>😊</span>
+              <div className={`score-status ${healthStatus.className}`}>
+                {healthStatus.label}
+                <span>{healthStatus.emoji}</span>
               </div>
-              <div className="score-desc">
-                Your page is healthy, but some issues need attention.
-              </div>
+              <div className="score-desc">{healthStatus.message}</div>
             </div>
           </div>
 
