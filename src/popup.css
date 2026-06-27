@@ -275,8 +275,29 @@ SCORE CARD
   flex: 1;
 }
 
+/* Health Status Colors */
+.excellent {
+  color: #10b981;
+}
+
 .good {
   color: #2ec259;
+}
+
+.fair {
+  color: #facc15;
+}
+
+.poor {
+  color: #fb923c;
+}
+
+.critical {
+  color: #ef4444;
+}
+
+.unknown {
+  color: #9ca3af;
 }
 
 .score-status {

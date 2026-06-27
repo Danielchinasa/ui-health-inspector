@@ -31,3 +31,11 @@ export type { ScanOptions } from './orchestrator';
 
 // Base scanner class
 export { BaseScanner } from './base-scanner';
+
+// Scanner implementations
+export { DeadButtonScanner } from './dead-button-scanner';
+export { BrokenLinkScanner } from './broken-link-scanner';
+export { MissingImageScanner } from './missing-image-scanner';
+export { OverflowScanner } from './overflow-scanner';
+export { AccessibilityScanner } from './accessibility-scanner';
+export { ConsoleErrorScanner } from './console-error-scanner';
