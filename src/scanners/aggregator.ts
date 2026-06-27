@@ -88,23 +88,42 @@ export function aggregateResults(
 
 /**
  * Calculate preliminary health score
- * This is a basic implementation - will be enhanced in Phase 6
+ * Enhanced scoring based on issue severity
  */
 function calculateHealthScore(issues: IssueCollection): number {
   // Start with perfect score
   let score = 100;
 
-  // Simple deduction based on issue counts
-  // Phase 6 will implement sophisticated scoring
-  score -= issues.deadButtons.length * 5;
-  score -= issues.brokenLinks.length * 5;
-  score -= issues.missingImages.length * 3;
-  score -= issues.overflowIssues.length * 4;
-  score -= issues.accessibility.length * 2;
-  score -= issues.consoleErrors.length * 1;
+  // Calculate severity-weighted deductions
+  const calculateDeductions = (issueList: BaseIssue[]) => {
+    return issueList.reduce((total, issue) => {
+      switch (issue.severity) {
+        case 'HIGH':
+          return total + 2;
+        case 'MEDIUM':
+          return total + 1;
+        case 'LOW':
+          return total + 0.5;
+        default:
+          return total + 1;
+      }
+    }, 0);
+  };
+
+  // Apply severity-based deductions for each issue type
+  score -= calculateDeductions(issues.deadButtons);
+  score -= calculateDeductions(issues.brokenLinks);
+  score -= calculateDeductions(issues.missingImages);
+  score -= calculateDeductions(issues.overflowIssues);
+  score -= calculateDeductions(issues.accessibility);
+  score -= calculateDeductions(issues.consoleErrors);
+
+  // Set a minimum score threshold to avoid overly harsh scores
+  // Even sites with many issues should show some score above 0
+  const minimumScore = 30;
 
   // Ensure score stays in valid range
-  return Math.max(0, Math.min(100, score));
+  return Math.max(minimumScore, Math.min(100, Math.round(score)));
 }
 
 /**

@@ -10,8 +10,15 @@ import { MessageType } from '@/types';
 import { createLogger, perfMonitor } from '@/utils/logger';
 import { createMessage, onMessage, sendToBackground } from '@/utils/messaging';
 import { getPageMetadata } from '@/utils/dom';
-import { orchestrator } from '@/scanners';
-import { MockScanner } from '@/scanners/mock-scanner';
+import {
+  orchestrator,
+  DeadButtonScanner,
+  BrokenLinkScanner,
+  MissingImageScanner,
+  OverflowScanner,
+  AccessibilityScanner,
+  ConsoleErrorScanner,
+} from '@/scanners';
 
 const logger = createLogger('Content');
 
@@ -23,25 +30,39 @@ let isInitialized = false;
  */
 function initialize() {
   if (isInitialized) {
-    logger.warn('Content script already initialized');
+    logger.warn('Content script already initialized, skipping');
     return;
   }
 
-  logger.info('Initializing content script');
-  isInitialized = true;
+  try {
+    logger.info('Initializing content script');
+    isInitialized = true;
 
-  // Register mock scanner for Phase 2 testing
-  // Phase 4 will replace this with real scanners
-  orchestrator.registerScanner(new MockScanner(3, 200));
+    // Register all scanners
+    orchestrator.registerScanner(new DeadButtonScanner());
+    orchestrator.registerScanner(new BrokenLinkScanner());
+    orchestrator.registerScanner(new MissingImageScanner());
+    orchestrator.registerScanner(new OverflowScanner());
+    orchestrator.registerScanner(new AccessibilityScanner());
+    orchestrator.registerScanner(new ConsoleErrorScanner());
 
-  // Set up message listeners
-  setupMessageListeners();
+    logger.info(
+      'Registered 6 scanners: DeadButton, BrokenLink, MissingImage, Overflow, Accessibility, ConsoleError'
+    );
 
-  // Log page info
-  const metadata = getPageMetadata();
-  logger.info('Page metadata:', metadata);
+    // Set up message listeners
+    setupMessageListeners();
 
-  logger.info('Content script ready');
+    // Log page info
+    const metadata = getPageMetadata();
+    logger.info('Page metadata:', metadata);
+
+    logger.info('Content script ready');
+  } catch (error) {
+    logger.error('Failed to initialize content script:', error);
+    isInitialized = false;
+    throw error;
+  }
 }
 
 /**
@@ -143,8 +164,11 @@ window.addEventListener('beforeunload', () => {
 });
 
 // Initialize immediately
-initialize();
-
-logger.info('Content script loaded');
+try {
+  initialize();
+  logger.info('Content script loaded successfully');
+} catch (error) {
+  logger.error('Content script failed to load:', error);
+}
 
 export {};
