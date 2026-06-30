@@ -4,20 +4,20 @@ import {
   ShieldCheck,
   Settings,
   Moon,
+  Sun,
   Activity,
-  Eye,
   CircleX,
   Link2Off,
   ImageOff,
   Maximize,
   Accessibility,
   TerminalSquare,
-  HelpCircle,
+  ExternalLink,
 } from 'lucide-react';
 import './popup.css';
 
 import { createLogger } from '@/utils/logger';
-import { usePopupInit, useScanAction, useHighlights } from '@/hooks/popup';
+import { usePopupInit, useScanAction } from '@/hooks/popup';
 import { usePopupStore } from '@/store/popup';
 
 const logger = createLogger('Popup');
@@ -78,6 +78,20 @@ function getHealthStatus(score: number | undefined): {
   }
 }
 
+function getIssueSeverity(
+  issueKey: string,
+  count: number | undefined
+): 'Good' | 'Medium' | 'Critical' | null {
+  if (count === undefined) return null;
+  if (count === 0) return 'Good';
+
+  if (issueKey === 'missing-images' || issueKey === 'overflow' || issueKey === 'console-errors') {
+    return 'Medium';
+  }
+
+  return 'Critical';
+}
+
 function IndexPopup() {
   usePopupInit();
 
@@ -97,25 +111,29 @@ function IndexPopup() {
     <div className="popup-container">
       <header className="popup-header">
         <div className="header-left">
-          <div className="logo">
-            <ShieldCheck size={34} strokeWidth={2.3} />
-          </div>
-
           <div className="title-wrap">
             <h1>UI Health</h1>
 
-            <span>Inspector</span>
-            <div className="app-version">v{version}</div>
+            <div className="subtitle-row">
+              <span>Design Quality Inspector</span>
+              <div className="app-version">v{version}</div>
+            </div>
           </div>
         </div>
 
         <div className="header-actions">
-          <button className="icon-button">
-            <Settings size={19} />
-          </button>
+          <div className="theme-toggle">
+            <button className="theme-option">
+              <Sun size={17} />
+            </button>
+
+            <button className="theme-option active">
+              <Moon size={17} />
+            </button>
+          </div>
 
           <button className="icon-button">
-            <Moon size={19} />
+            <Settings size={18} />
           </button>
         </div>
       </header>
@@ -130,6 +148,8 @@ function IndexPopup() {
           <div className="error-content">{scanError}</div>
         </div>
       )}
+
+      <footer className="popup-footer">Built with <span className="footer-heart">❤️</span> for developers</footer>
     </div>
   );
 }
@@ -137,143 +157,170 @@ function IndexPopup() {
 function ScanView() {
   const { scanState, currentScan } = usePopupStore();
   const { startScan } = useScanAction();
-  const { highlightsEnabled, toggleHighlights } = useHighlights();
 
   const healthStatus = getHealthStatus(currentScan?.healthScore);
+  const hasScan = currentScan !== null;
+  const issueSummary = [
+    {
+      key: 'dead-buttons',
+      label: 'Dead Buttons',
+      count: currentScan?.issues.deadButtons.length,
+      icon: CircleX,
+      tone: 'red',
+    },
+    {
+      key: 'broken-links',
+      label: 'Broken Links',
+      count: currentScan?.issues.brokenLinks.length,
+      icon: Link2Off,
+      tone: 'orange',
+    },
+    {
+      key: 'missing-images',
+      label: 'Missing Images',
+      count: currentScan?.issues.missingImages.length,
+      icon: ImageOff,
+      tone: 'purple',
+    },
+    {
+      key: 'overflow',
+      label: 'Overflow Issues',
+      count: currentScan?.issues.overflowIssues.length,
+      icon: Maximize,
+      tone: 'cyan',
+    },
+    {
+      key: 'accessibility',
+      label: 'Accessibility',
+      count: currentScan?.issues.accessibility.length,
+      icon: Accessibility,
+      tone: 'green',
+    },
+    {
+      key: 'console-errors',
+      label: 'Console Errors',
+      count: currentScan?.issues.consoleErrors.length,
+      icon: TerminalSquare,
+      tone: 'blue',
+    },
+  ];
+  const displayScore = currentScan?.healthScore;
+  const circumference = 427;
+  const ringDash = `${(displayScore ?? 0) * 4.27} ${circumference}`;
+  const pageHost = currentScan?.url
+    ? new URL(currentScan.url).hostname.replace(/^www\./, '')
+    : null;
 
   return (
     <div className="scan-view">
-      <div className="card-wrapper">
-        <div className="score-card">
-          <div className="score-top">
-            <div className="score-left">
-              <svg className="score-ring" width="108" height="108" viewBox="0 0 170 170">
-                <defs>
-                  <linearGradient id="scoreGradient" x1="0%" y1="100%" x2="100%" y2="0%">
-                    <stop offset="0%" stopColor="#31C022" />
-                    <stop offset="45%" stopColor="#FACC15" />
-                    <stop offset="100%" stopColor="#1B7516" />
-                  </linearGradient>
-                </defs>
+      <section className="hero-panel">
+        <div className="score-card-content">
+          <div className="score-left">
+            <svg className="score-ring" width="150" height="150" viewBox="0 0 170 170">
+              <defs>
+                <linearGradient id="scoreGradient" x1="0%" y1="100%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="#fb4347" />
+                  <stop offset="48%" stopColor="#f7db1c" />
+                  <stop offset="100%" stopColor="#38d654" />
+                </linearGradient>
+              </defs>
 
-                <circle cx="85" cy="85" r="68" stroke="#1e2d5a" strokeWidth="13" fill="none" />
+              <circle cx="85" cy="85" r="68" stroke="#202227" strokeWidth="13" fill="none" />
 
-                <circle
-                  cx="85"
-                  cy="85"
-                  r="68"
-                  fill="none"
-                  stroke="url(#scoreGradient)"
-                  strokeWidth="13"
-                  strokeLinecap="round"
-                  strokeDasharray={`${(currentScan?.healthScore ?? 0) * 4.27} 427`}
-                  transform="rotate(-90 85 85)"
-                />
-              </svg>
-              <div className="score-number">{currentScan ? currentScan.healthScore : '--'}</div>
-              <div className="score-max">/100</div>
-            </div>
-
-            <div className="score-right">
-              <div className={`score-status ${healthStatus.className}`}>
-                {healthStatus.label}
-                <span>{healthStatus.emoji}</span>
-              </div>
-              <div className="score-desc">{healthStatus.message}</div>
-            </div>
+              <circle
+                cx="85"
+                cy="85"
+                r="68"
+                fill="none"
+                stroke="url(#scoreGradient)"
+                strokeWidth="13"
+                strokeLinecap="round"
+                strokeDasharray={ringDash}
+                transform="rotate(-90 85 85)"
+              />
+            </svg>
+            <div className="score-number">{displayScore ?? '--'}</div>
+            <div className="score-max">/100</div>
           </div>
+
+          <div className="score-right">
+            <div className={`score-status ${healthStatus.className}`}>
+              {healthStatus.label}
+              <span>{healthStatus.emoji}</span>
+            </div>
+            <div className="score-desc">{healthStatus.message}</div>
+
+            {hasScan && (
+              <div className="scan-delta">
+                <strong>Scan complete</strong>
+                <span>{currentScan.metadata.totalIssues} issues found</span>
+              </div>
+            )}
+
+            {hasScan && pageHost && (
+              <div className="scan-meta">
+                <span>Scanned just now</span>
+                <span>
+                  {pageHost}
+                  <ExternalLink size={12} />
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="scan-art">
+          <div className="art-grid" />
+          <div className="monitor">
+            <ShieldCheck size={42} strokeWidth={1.9} />
+          </div>
+          <div className="monitor-stand" />
 
           <button className="primary-btn" onClick={startScan} disabled={scanState === 'scanning'}>
             {scanState === 'scanning' ? (
               <span className="spinner" />
             ) : (
               <>
-                <Activity size={18} strokeWidth={2.5} />
-                Scan This Page
+                <Activity size={17} strokeWidth={2.5} />
+                Scan Page
               </>
             )}
           </button>
+          <p>Quick • Accurate • Actionable</p>
+        </div>
+      </section>
 
-          <button className="highlight-button" onClick={toggleHighlights}>
-            <Eye size={19} />
+      <section className="overview-panel">
+        <div className="overview-header">
+          <div className="overview-title">
+            <span className="overview-dot" />
+            <strong>Overview</strong>
+          </div>
 
-            <span>View Live Highlight</span>
-
-            <div className={`toggle ${highlightsEnabled ? 'on' : ''}`}>
-              <div className="toggle-thumb" />
-            </div>
-          </button>
         </div>
 
         <div className="issues-grid">
-          <div className="issue-card">
-            <div className="issue-icon red">
-              <CircleX size={24} />
-            </div>
-            <div className="issue-count">
-              {currentScan ? currentScan.issues.deadButtons.length : 0}
-            </div>
-            <div className="issue-label">Dead Buttons</div>
-          </div>
-          <div className="issue-card">
-            <div className="issue-icon orange">
-              <Link2Off size={24} />
-            </div>
-            <div className="issue-count">
-              {currentScan ? currentScan.issues.brokenLinks.length : 0}
-            </div>
-            <div className="issue-label">Broken Links</div>
-          </div>
-          <div className="issue-card">
-            <div className="issue-icon purple">
-              <ImageOff size={24} />
-            </div>
-            <div className="issue-count">
-              {currentScan ? currentScan.issues.missingImages.length : 0}
-            </div>
-            <div className="issue-label">Missing Images</div>
-          </div>
-          <div className="issue-card">
-            <div className="issue-icon cyan">
-              <Maximize size={24} />
-            </div>
-            <div className="issue-count">
-              {currentScan ? currentScan.issues.overflowIssues.length : 0}
-            </div>
-            <div className="issue-label">Overflow Issues</div>
-          </div>
-          <div className="issue-card">
-            <div className="issue-icon green">
-              <Accessibility size={24} />
-            </div>
-            <div className="issue-count">
-              {currentScan ? currentScan.issues.accessibility.length : 0}
-            </div>
-            <div className="issue-label">Accessibility Issues</div>
-          </div>
-          <div className="issue-card">
-            <div className="issue-icon blue">
-              <TerminalSquare size={24} />
-            </div>
-            <div className="issue-count">
-              {currentScan ? currentScan.issues.consoleErrors.length : 0}
-            </div>
-            <div className="issue-label">Console Errors</div>
-          </div>
-        </div>
+          {issueSummary.map((issue) => {
+            const Icon = issue.icon;
+            const issueSeverity = getIssueSeverity(issue.key, issue.count);
 
-        <div className="footer-row">
-          <div className="last-scanned">
-            Last scanned
-            <br />
-            <strong>Just now</strong>
-          </div>
-          <a className="help-link" href="#">
-            <HelpCircle size={18} />
-            Help & Feedback
-          </a>
+            return (
+              <button className="issue-card" key={issue.key}>
+                <div className={`issue-icon ${issue.tone}`}>
+                  <Icon size={19} />
+                </div>
+                <div className="issue-count">{issue.count ?? '--'}</div>
+                <div className="issue-label">{issue.label}</div>
+                {issueSeverity && (
+                  <div className={`issue-badge ${issueSeverity.toLowerCase()}`}>
+                    {issueSeverity}
+                  </div>
+                )}
+              </button>
+            );
+          })}
         </div>
-      </div>
+      </section>
     </div>
   );
 }
