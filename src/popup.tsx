@@ -95,7 +95,7 @@ function getIssueSeverity(
 function IndexPopup() {
   usePopupInit();
 
-  const { scanError } = usePopupStore();
+  const { scanError, theme, setTheme } = usePopupStore();
 
   // Read extension version from the manifest
   const manifest = (
@@ -108,7 +108,7 @@ function IndexPopup() {
   }, []);
 
   return (
-    <div className="popup-container">
+    <div className="popup-container" data-theme={theme}>
       <header className="popup-header">
         <div className="header-left">
           <div className="title-wrap">
@@ -118,16 +118,29 @@ function IndexPopup() {
               <span>Design Quality Inspector</span>
               <div className="app-version">v{version}</div>
             </div>
+            <div className="byline">by Cornerpis</div>
           </div>
         </div>
 
         <div className="header-actions">
           <div className="theme-toggle">
-            <button className="theme-option">
+<button
+  type="button"
+  aria-label="Switch to light theme"
+  aria-pressed={theme === 'light'}
+  className={`theme-option ${theme === 'light' ? 'active' : ''}`}
+  onClick={() => setTheme('light')}
+>
               <Sun size={17} />
             </button>
 
-            <button className="theme-option active">
+<button
+  type="button"
+  aria-label="Switch to dark theme"
+  aria-pressed={theme === 'dark'}
+  className={`theme-option ${theme === 'dark' ? 'active' : ''}`}
+  onClick={() => setTheme('dark')}
+>
               <Moon size={17} />
             </button>
           </div>
