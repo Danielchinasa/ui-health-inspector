@@ -124,10 +124,13 @@ function IndexPopup() {
 
         <div className="header-actions">
           <div className="theme-toggle">
-            <button
-              className={`theme-option ${theme === 'light' ? 'active' : ''}`}
-              onClick={() => setTheme('light')}
-            >
+<button
+  type="button"
+  aria-label="Switch to light theme"
+  aria-pressed={theme === 'light'}
+  className={`theme-option ${theme === 'light' ? 'active' : ''}`}
+  onClick={() => setTheme('light')}
+>
               <Sun size={17} />
             </button>
 
