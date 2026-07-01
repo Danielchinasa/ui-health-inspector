@@ -82,6 +82,7 @@ export function useScanAction() {
       setScanError(null);
       setScanProgress(0);
 
+
       logger.info('Starting scan from popup');
 
       // Send scan request to background
