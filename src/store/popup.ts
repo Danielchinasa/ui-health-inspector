@@ -10,6 +10,8 @@ export type ScanState = 'idle' | 'scanning' | 'complete' | 'error';
 export type ViewTab = 'scan' | 'history' | 'settings';
 export type IssueFilter = 'all' | 'high' | 'medium' | 'low';
 
+export type ThemeMode = 'dark' | 'light';
+
 interface PopupState {
   // Scan state
   scanState: ScanState;
@@ -22,6 +24,7 @@ interface PopupState {
   issueFilter: IssueFilter;
   highlightsEnabled: boolean;
   expandedIssueId: string | null;
+  theme: ThemeMode;
 
   // Settings
   settings: UserSettings | null;
@@ -38,6 +41,7 @@ interface PopupState {
   setIssueFilter: (filter: IssueFilter) => void;
   setHighlightsEnabled: (enabled: boolean) => void;
   setExpandedIssueId: (id: string | null) => void;
+  setTheme: (theme: ThemeMode) => void;
   setSettings: (settings: UserSettings) => void;
   setScanHistory: (history: ScanResult[]) => void;
   reset: () => void;
@@ -52,6 +56,7 @@ const initialState = {
   issueFilter: 'all' as IssueFilter,
   highlightsEnabled: false,
   expandedIssueId: null,
+  theme: 'dark' as ThemeMode,
   settings: null,
   scanHistory: [],
 };
@@ -67,6 +72,7 @@ export const usePopupStore = create<PopupState>((set) => ({
   setIssueFilter: (issueFilter) => set({ issueFilter }),
   setHighlightsEnabled: (highlightsEnabled) => set({ highlightsEnabled }),
   setExpandedIssueId: (expandedIssueId) => set({ expandedIssueId }),
+  setTheme: (theme) => set({ theme }),
   setSettings: (settings) => set({ settings }),
   setScanHistory: (scanHistory) => set({ scanHistory }),
   reset: () => set(initialState),
