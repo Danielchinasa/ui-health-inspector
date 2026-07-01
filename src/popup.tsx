@@ -124,23 +124,23 @@ function IndexPopup() {
 
         <div className="header-actions">
           <div className="theme-toggle">
-<button
-  type="button"
-  aria-label="Switch to light theme"
-  aria-pressed={theme === 'light'}
-  className={`theme-option ${theme === 'light' ? 'active' : ''}`}
-  onClick={() => setTheme('light')}
->
+            <button
+              type="button"
+              aria-label="Switch to light theme"
+              aria-pressed={theme === 'light'}
+              className={`theme-option ${theme === 'light' ? 'active' : ''}`}
+              onClick={() => setTheme('light')}
+            >
               <Sun size={17} />
             </button>
 
-<button
-  type="button"
-  aria-label="Switch to dark theme"
-  aria-pressed={theme === 'dark'}
-  className={`theme-option ${theme === 'dark' ? 'active' : ''}`}
-  onClick={() => setTheme('dark')}
->
+            <button
+              type="button"
+              aria-label="Switch to dark theme"
+              aria-pressed={theme === 'dark'}
+              className={`theme-option ${theme === 'dark' ? 'active' : ''}`}
+              onClick={() => setTheme('dark')}
+            >
               <Moon size={17} />
             </button>
           </div>
@@ -162,7 +162,9 @@ function IndexPopup() {
         </div>
       )}
 
-      <footer className="popup-footer">Built with <span className="footer-heart">❤️</span> for developers</footer>
+      <footer className="popup-footer">
+        Built with <span className="footer-heart">❤️</span> for developers
+      </footer>
     </div>
   );
 }
@@ -295,7 +297,7 @@ function ScanView() {
             ) : (
               <>
                 <Activity size={17} strokeWidth={2.5} />
-                Scan Page
+                {hasScan ? 'Rescan Page' : 'Scan Page'}
               </>
             )}
           </button>
@@ -309,7 +311,6 @@ function ScanView() {
             <span className="overview-dot" />
             <strong>Overview</strong>
           </div>
-
         </div>
 
         <div className="issues-grid">

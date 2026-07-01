@@ -81,6 +81,7 @@ export function useScanAction() {
       setScanState('scanning');
       setScanError(null);
       setScanProgress(0);
+      setCurrentScan(null);
 
       logger.info('Starting scan from popup');
 
