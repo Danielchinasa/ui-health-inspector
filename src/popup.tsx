@@ -134,10 +134,13 @@ function IndexPopup() {
               <Sun size={17} />
             </button>
 
-            <button
-              className={`theme-option ${theme === 'dark' ? 'active' : ''}`}
-              onClick={() => setTheme('dark')}
-            >
+<button
+  type="button"
+  aria-label="Switch to dark theme"
+  aria-pressed={theme === 'dark'}
+  className={`theme-option ${theme === 'dark' ? 'active' : ''}`}
+  onClick={() => setTheme('dark')}
+>
               <Moon size={17} />
             </button>
           </div>
