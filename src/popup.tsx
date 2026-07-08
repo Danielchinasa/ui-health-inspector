@@ -359,6 +359,9 @@ function ScanView() {
           empty_button: 'Button has no visible text',
           missing_aria_label: 'Missing aria-label attribute',
           low_contrast: 'Text contrast ratio is too low',
+          duplicate_id: 'Duplicate id attribute',
+          missing_lang: 'Missing lang attribute on <html>',
+          focus_indicator_removed: 'Focus outline removed in CSS',
         };
         details.push({ label: 'Reason', value: a11yReasons[i.reason] ?? i.reason });
         if (i.wcagLevel) details.push({ label: 'WCAG', value: `Level ${i.wcagLevel}` });
@@ -366,16 +369,27 @@ function ScanView() {
       }
       case 'CONSOLE_ERROR': {
         const i = issue as ConsoleErrorIssue;
-        details.push({ label: 'Error', value: i.errorMessage });
-        details.push({ label: 'Type', value: i.errorType });
-        if (i.url)
-          details.push({ label: 'File', value: i.url.split('/').pop() || i.url, mono: true });
-        if (i.line != null)
-          details.push({
-            label: 'Location',
-            value: `Line ${i.line}${i.column != null ? `, Col ${i.column}` : ''}`,
-            mono: true,
-          });
+        // Show error class name when available (e.g. "ReferenceError", "TypeError")
+        if (i.errorName) details.push({ label: 'Error Type', value: i.errorName });
+        details.push({ label: 'Message', value: i.errorMessage });
+        if (i.errorType === 'network') {
+          // Network errors: show method + status + request URL
+          if (i.httpMethod || i.httpStatus != null) {
+            const parts = [i.httpMethod, i.httpStatus?.toString()].filter(Boolean);
+            details.push({ label: 'Request', value: parts.join(' → '), mono: true });
+          }
+          if (i.url) details.push({ label: 'URL', value: i.url, mono: true });
+        } else {
+          // Runtime exceptions: show source file + line/column
+          if (i.url)
+            details.push({ label: 'File', value: i.url.split('/').pop() || i.url, mono: true });
+          if (i.line != null)
+            details.push({
+              label: 'Location',
+              value: `Line ${i.line}${i.column != null ? `, Col ${i.column}` : ''}`,
+              mono: true,
+            });
+        }
         break;
       }
     }

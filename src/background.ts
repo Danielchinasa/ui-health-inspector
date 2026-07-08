@@ -13,6 +13,225 @@ import { storageManager } from '@/utils/storage';
 
 const logger = createLogger('Background');
 
+// ─── Error monitor injection ──────────────────────────────────────────────────
+
+/**
+ * Self-contained function injected into the PAGE world (MAIN) as early as
+ * possible on every navigation.  It intercepts console.error, window.onerror,
+ * unhandledrejection, and fetch/XHR, serialising captured events into
+ * document.documentElement.dataset.uihiErrors so the isolated-world
+ * ConsoleErrorScanner can read them at scan time.
+ *
+ * NOTE: this function is serialised by chrome.scripting.executeScript and
+ * must be entirely self-contained (no imports, no closures over outer scope).
+ */
+function pageWorldErrorMonitor(): void {
+  /* eslint-disable @typescript-eslint/no-explicit-any */
+  const WIN = window as any;
+  if (WIN.__uihi_monitor__) return; // already installed
+  WIN.__uihi_monitor__ = true;
+
+  const ATTR = 'uihiErrors';
+  const MAX = 200;
+
+  function push(entry: Record<string, unknown>): void {
+    try {
+      const html = document.documentElement;
+      const list: unknown[] = JSON.parse((html.dataset as any)[ATTR] || '[]');
+      list.push(entry);
+      if (list.length > MAX) list.splice(0, list.length - MAX);
+      (html.dataset as any)[ATTR] = JSON.stringify(list);
+    } catch {
+      /* never crash the page */
+    }
+  }
+
+  function argStr(a: unknown): string {
+    if (a instanceof Error) return a.message;
+    if (typeof a === 'string') return a;
+    try {
+      return JSON.stringify(a);
+    } catch {
+      return String(a);
+    }
+  }
+
+  // console.error / console.warn
+  const origErr = console.error.bind(console);
+  console.error = function (...args: unknown[]) {
+    push({ t: 'error', m: args.map(argStr).join(' '), ts: Date.now() });
+    return origErr(...args);
+  };
+  const origWarn = console.warn.bind(console);
+  console.warn = function (...args: unknown[]) {
+    push({ t: 'warning', m: args.map(argStr).join(' '), ts: Date.now() });
+    return origWarn(...args);
+  };
+
+  // Uncaught synchronous exceptions
+  window.addEventListener('error', (e: ErrorEvent) => {
+    const msg = e.message || 'Unknown error';
+    if (msg === 'Script error.' || msg === 'Script error') {
+      push({
+        t: 'error',
+        m: 'Script error (cross-origin: add crossorigin="anonymous" for details)',
+        ename: 'ScriptError',
+        ts: Date.now(),
+      });
+      return;
+    }
+    push({
+      t: 'error',
+      m: msg,
+      st: e.error?.stack,
+      src: e.filename || undefined,
+      ln: e.lineno || undefined,
+      col: e.colno || undefined,
+      ename: e.error?.name || undefined,
+      ts: Date.now(),
+    });
+  });
+
+  // Unhandled promise rejections
+  window.addEventListener('unhandledrejection', (e: PromiseRejectionEvent) => {
+    let m: string, st: string | undefined, ename: string | undefined;
+    if (e.reason instanceof Error) {
+      m = e.reason.message;
+      st = e.reason.stack;
+      ename = e.reason.name;
+    } else if (typeof e.reason === 'string') {
+      m = e.reason;
+    } else {
+      try {
+        m = JSON.stringify(e.reason);
+      } catch {
+        m = String(e.reason);
+      }
+    }
+    push({ t: 'unhandled_rejection', m: m!, st, ename, ts: Date.now() });
+  });
+
+  // fetch() — capture non-ok responses and network failures
+  if (typeof window.fetch === 'function') {
+    const origFetch = window.fetch.bind(window);
+    window.fetch = async function (input: any, init?: any): Promise<Response> {
+      let url = '';
+      try {
+        url =
+          typeof input === 'string'
+            ? input
+            : input instanceof URL
+              ? input.toString()
+              : input instanceof Request
+                ? input.url
+                : String(input);
+      } catch {
+        url = String(input);
+      }
+      const method = (
+        init?.method || (input instanceof Request ? input.method : 'GET')
+      ).toUpperCase();
+      try {
+        const r: Response = await origFetch(input, init);
+        if (!r.ok)
+          push({
+            t: 'network',
+            m: `${r.status} ${r.statusText || ''}`.trim(),
+            url,
+            status: r.status,
+            method,
+            ts: Date.now(),
+          });
+        return r;
+      } catch (err: unknown) {
+        push({
+          t: 'network',
+          m: err instanceof Error ? err.message : String(err),
+          url,
+          method,
+          ts: Date.now(),
+        });
+        throw err;
+      }
+    };
+  }
+
+  // XMLHttpRequest — capture non-ok responses and failures
+  const origOpen = XMLHttpRequest.prototype.open;
+  const origSend = XMLHttpRequest.prototype.send;
+  const xhrMeta = new WeakMap<XMLHttpRequest, { method: string; url: string }>();
+  XMLHttpRequest.prototype.open = function (method: string, url: string, ...rest: any[]) {
+    xhrMeta.set(this, { method: method.toUpperCase(), url: String(url) });
+    return origOpen.apply(this, [method, url, ...rest] as any);
+  };
+  XMLHttpRequest.prototype.send = function (...args: any[]) {
+    const info = xhrMeta.get(this);
+    if (info) {
+      this.addEventListener('load', function (this: XMLHttpRequest) {
+        if (this.status >= 400)
+          push({
+            t: 'network',
+            m: `${this.status} ${this.statusText || ''}`.trim(),
+            url: info.url,
+            status: this.status,
+            method: info.method,
+            ts: Date.now(),
+          });
+      });
+      this.addEventListener('error', function () {
+        push({
+          t: 'network',
+          m: 'Network request failed',
+          url: info.url,
+          method: info.method,
+          ts: Date.now(),
+        });
+      });
+    }
+    return origSend.apply(this, args as [body?: Document | XMLHttpRequestBodyInit | null]);
+  };
+  /* eslint-enable @typescript-eslint/no-explicit-any */
+}
+
+const BLOCKED_URL_PREFIXES = [
+  'chrome://',
+  'chrome-extension://',
+  'edge://',
+  'about:',
+  'devtools://',
+  'chrome-search://',
+  'chrome-distiller://',
+];
+
+/**
+ * Inject the error monitor into the page's MAIN world as early as possible.
+ * Silently skips pages that cannot be scripted (chrome:// etc.).
+ */
+async function injectErrorMonitor(tabId: number, url: string): Promise<void> {
+  if (!url || BLOCKED_URL_PREFIXES.some((p) => url.startsWith(p))) return;
+  try {
+    await chrome.scripting.executeScript({
+      target: { tabId },
+      world: 'MAIN' as any,
+      injectImmediately: true,
+      func: pageWorldErrorMonitor,
+    });
+    logger.info(`[ErrorMonitor] Injected into tab ${tabId}`);
+  } catch {
+    // Silently ignore — page may block injection (CSP, permissions, etc.)
+  }
+}
+
+// Inject on every page navigation (covers both new loads and full reloads)
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+  if (changeInfo.status === 'loading') {
+    const url = tab.url || '';
+    injectErrorMonitor(tabId, url).catch(() => {
+      /* background error — ignore */
+    });
+  }
+});
+
 /**
  * Extension lifecycle
  */

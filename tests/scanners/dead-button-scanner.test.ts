@@ -48,7 +48,9 @@ describe('DeadButtonScanner', () => {
 
       expect(issues).toHaveLength(1);
       expect(issues[0].type).toBe(IssueType.DEAD_BUTTON);
-      expect(issues[0].severity).toBe(IssueSeverity.HIGH);
+      // Native <button> elements may use addEventListener (undetectable via DOM inspection),
+      // so the severity is MEDIUM to reduce false positives.
+      expect(issues[0].severity).toBe(IssueSeverity.MEDIUM);
       expect(issues[0].reason).toBe('no_handler');
     });
 
