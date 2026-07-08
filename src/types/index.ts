@@ -178,7 +178,12 @@ export interface BrokenLinkIssue extends BaseIssue {
   type: IssueType.BROKEN_LINK;
   severity: IssueSeverity;
   href: string;
-  reason: 'empty_href' | 'malformed_url' | 'anchor_only' | 'javascript_void';
+  reason:
+    | 'empty_href'
+    | 'malformed_url'
+    | 'anchor_only'
+    | 'javascript_void'
+    | 'missing_anchor_target';
 }
 
 export interface MissingImageIssue extends BaseIssue {
@@ -199,7 +204,15 @@ export interface OverflowIssue extends BaseIssue {
 export interface AccessibilityIssue extends BaseIssue {
   type: IssueType.ACCESSIBILITY;
   severity: IssueSeverity;
-  reason: 'missing_alt' | 'missing_label' | 'empty_button' | 'missing_aria_label' | 'low_contrast';
+  reason:
+    | 'missing_alt'
+    | 'missing_label'
+    | 'empty_button'
+    | 'missing_aria_label'
+    | 'low_contrast'
+    | 'duplicate_id'
+    | 'missing_lang'
+    | 'focus_indicator_removed';
   wcagLevel?: 'A' | 'AA' | 'AAA';
 }
 
@@ -208,10 +221,17 @@ export interface ConsoleErrorIssue extends BaseIssue {
   severity: IssueSeverity;
   errorMessage: string;
   errorType: 'exception' | 'network' | 'security' | 'other';
+  /** JavaScript Error subclass name, e.g. "ReferenceError", "TypeError" */
+  errorName?: string;
   stack?: string;
+  /** Source file URL for exceptions; request URL for network errors */
   url?: string;
   line?: number;
   column?: number;
+  /** HTTP verb for network errors (GET, POST, …) */
+  httpMethod?: string;
+  /** HTTP response status code for failed network requests */
+  httpStatus?: number;
 }
 
 // ============================================================================

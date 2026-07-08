@@ -99,6 +99,21 @@ export class BrokenLinkScanner extends BaseScanner {
       }
     }
 
+    // Check for fragment links where the target element does not exist
+    if (normalizedHref.startsWith('#') && normalizedHref.length > 1) {
+      const targetId = normalizedHref.slice(1);
+      if (!document.getElementById(targetId)) {
+        return this.createIssue(
+          link,
+          normalizedHref,
+          'missing_anchor_target',
+          `Link target "${normalizedHref}" does not match any element id on this page`
+        );
+      }
+      // Target exists — valid anchor link
+      return null;
+    }
+
     // Check for malformed URLs
     if (this.isMalformedUrl(normalizedHref)) {
       return this.createIssue(link, normalizedHref, 'malformed_url', 'Link has malformed URL');
@@ -210,6 +225,8 @@ export class BrokenLinkScanner extends BaseScanner {
       malformed_url: 'Fix the URL format or remove the link',
       anchor_only: 'Add a valid href or implement a click handler',
       javascript_void: 'Use a button element or add a proper navigation target',
+      missing_anchor_target:
+        'Add an element with the matching id attribute on this page, or update the href to a valid target',
     };
 
     return recommendations[reason];

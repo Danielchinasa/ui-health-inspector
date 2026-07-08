@@ -85,7 +85,10 @@ export class DeadButtonScanner extends BaseScanner {
       );
     }
 
-    // Check buttons without handlers
+    // Check buttons without handlers.
+    // Use MEDIUM severity for native <button>/<input> elements because they may use
+    // addEventListener() which cannot be detected via DOM inspection.  Reserve HIGH
+    // only for elements with explicit dead signals (disabled, empty onclick, etc.).
     if (
       (element.tagName === 'BUTTON' ||
         element.tagName === 'INPUT' ||
@@ -93,11 +96,21 @@ export class DeadButtonScanner extends BaseScanner {
       !this.hasEventHandler(element) &&
       !this.hasFormAction(element)
     ) {
+      // If any ancestor uses event delegation, the button may still be functional.
+      if (this.hasParentDelegation(element)) {
+        return null;
+      }
+
+      const severity =
+        element.tagName === 'BUTTON' || element.tagName === 'INPUT'
+          ? IssueSeverity.MEDIUM // native buttons may use addEventListener
+          : IssueSeverity.HIGH; // custom role=button elements require explicit handlers
+
       return this.createIssue(
         element,
         'no_handler',
-        'Interactive element has no click handler or form action',
-        IssueSeverity.HIGH
+        'Interactive element has no detectable click handler or form action (may use addEventListener)',
+        severity
       );
     }
 
@@ -235,14 +248,31 @@ export class DeadButtonScanner extends BaseScanner {
     return false;
   }
 
+  /**
+   * Check whether any ancestor element uses event delegation (onclick property set).
+   * Traverses up to 6 levels to detect common delegation patterns.
+   */
+  private hasParentDelegation(element: HTMLElement): boolean {
+    let parent = element.parentElement;
+    let depth = 0;
+    while (parent && depth < 6) {
+      if ((parent as any).onclick) {
+        return true;
+      }
+      parent = parent.parentElement;
+      depth++;
+    }
+    return false;
+  }
+
   private hasEventHandler(element: HTMLElement): boolean {
     // Check for onclick attribute
     if (element.hasAttribute('onclick')) {
       return true;
     }
 
-    // Check for attached event listeners (limited to detecting via properties)
-    // Note: We can't detect addEventListener listeners, but we can check common patterns
+    // Check for attached event listeners (limited to detecting via properties).
+    // Note: addEventListener() bindings cannot be detected via DOM inspection alone.
     const eventProperties = ['onclick', 'onmousedown', 'onmouseup', 'onpointerdown'];
     for (const prop of eventProperties) {
       if ((element as any)[prop]) {
@@ -336,7 +366,8 @@ export class DeadButtonScanner extends BaseScanner {
       empty_onclick: 'Remove the empty onclick handler or add meaningful functionality',
       hash_href: 'Add a click event handler or change href to a valid URL',
       void_href: 'Add a click event handler or use a button element instead',
-      no_handler: 'Add a click event handler or remove the interactive appearance',
+      no_handler:
+        'Add a click event handler. If using addEventListener(), this warning may be a false positive — verify the button is functional.',
       disabled: 'Consider removing disabled elements or provide user feedback',
       role_without_handler:
         'Add a click event handler and keyboard support (tabindex, Enter/Space keys)',

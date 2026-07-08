@@ -149,11 +149,21 @@ describe('BrokenLinkScanner', () => {
       expect(issues).toHaveLength(0);
     });
 
-    it('should not flag fragment links', async () => {
-      document.body.innerHTML = '<a href="#section-1">Jump to section</a>';
+    it('should not flag fragment links when the target exists', async () => {
+      document.body.innerHTML =
+        '<a href="#section-1">Jump to section</a><div id="section-1">Section content</div>';
       const issues = await scanner.scan();
 
       expect(issues).toHaveLength(0);
+    });
+
+    it('should detect fragment links whose target does not exist', async () => {
+      document.body.innerHTML = '<a href="#missing-section">Jump to section</a>';
+      const issues = await scanner.scan();
+
+      expect(issues).toHaveLength(1);
+      expect(issues[0].reason).toBe('missing_anchor_target');
+      expect(issues[0].href).toBe('#missing-section');
     });
 
     it('should detect malformed URLs', async () => {
