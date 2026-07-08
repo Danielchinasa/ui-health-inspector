@@ -74,6 +74,7 @@ export function useScanAction() {
     setScanProgress,
     setScanHistory,
     scanHistory,
+    settings,
   } = usePopupStore();
 
   const startScan = useCallback(async () => {
@@ -81,7 +82,6 @@ export function useScanAction() {
       setScanState('scanning');
       setScanError(null);
       setScanProgress(0);
-
 
       logger.info('Starting scan from popup');
 
@@ -95,23 +95,22 @@ export function useScanAction() {
         const wrappedResult = response.data as any;
         const result = wrappedResult.data || wrappedResult; // Unwrap if needed
 
-        // Detailed logging for debugging
-        console.log('=== SCAN RESULT RECEIVED ===');
-        console.log('Raw response:', response);
-        console.log('Wrapped result:', wrappedResult);
-        console.log('Final result object:', result);
-        console.log('Health score:', result.healthScore);
-        console.log('Issues object:', result.issues);
-        console.log('Issues keys:', result.issues ? Object.keys(result.issues) : 'no issues');
-        console.log('Dead buttons:', result.issues?.deadButtons);
-        console.log('Dead buttons length:', result.issues?.deadButtons?.length);
-
         setCurrentScan(result);
         setScanState('complete');
         setScanProgress(100);
 
-        // Add to history
-        setScanHistory([result, ...scanHistory].slice(0, 10)); // Keep last 10
+        // Add to history — respect the maxHistoryItems setting
+        const maxItems = settings?.maxHistoryItems ?? 20;
+        setScanHistory([result, ...scanHistory].slice(0, maxItems));
+
+        // Auto-highlight if the user has that preference enabled
+        if (settings?.highlightByDefault) {
+          try {
+            await sendToBackground(createMessage(MessageType.TOGGLE_HIGHLIGHTS, { enabled: true }));
+          } catch {
+            // highlights are non-critical
+          }
+        }
 
         // Persist scan result per-tab using URL as key
         chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
@@ -133,7 +132,15 @@ export function useScanAction() {
       setScanError(error instanceof Error ? error.message : 'Scan failed');
       setScanProgress(0);
     }
-  }, [setScanState, setCurrentScan, setScanError, setScanProgress, setScanHistory, scanHistory]);
+  }, [
+    setScanState,
+    setCurrentScan,
+    setScanError,
+    setScanProgress,
+    setScanHistory,
+    scanHistory,
+    settings,
+  ]);
 
   return { startScan };
 }

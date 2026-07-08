@@ -59,8 +59,13 @@ export class MissingImageScanner extends BaseScanner {
       return this.createIssue(img, src, 'empty_src', 'Image has empty src attribute');
     }
 
+    // If image is still loading, don't classify it as broken yet.
+    if (!img.complete) {
+      return null;
+    }
+
     // Check if image failed to load
-    if (!img.complete || img.naturalWidth === 0) {
+    if (img.naturalWidth === 0 && trimmedSrc !== '') {
       return this.createIssue(img, src, 'failed_load', 'Image failed to load');
     }
 
@@ -71,9 +76,13 @@ export class MissingImageScanner extends BaseScanner {
     const issues: MissingImageIssue[] = [];
 
     // Find elements with background images
-    const allElements = document.querySelectorAll('*');
+    const allElements = document.querySelectorAll<HTMLElement>('[style*="background"], [class]');
 
     for (const element of Array.from(allElements)) {
+      if (!this.isElementLikelyVisible(element)) {
+        continue;
+      }
+
       const style = window.getComputedStyle(element);
       const backgroundImage = style.backgroundImage;
 
@@ -104,6 +113,11 @@ export class MissingImageScanner extends BaseScanner {
     }
 
     return issues;
+  }
+
+  private isElementLikelyVisible(element: HTMLElement): boolean {
+    const style = window.getComputedStyle(element);
+    return style.display !== 'none' && style.visibility !== 'hidden' && style.opacity !== '0';
   }
 
   private createIssue(

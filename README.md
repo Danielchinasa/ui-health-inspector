@@ -93,7 +93,7 @@ pnpm package
 
 ## Development Status
 
-**Current Phase:** Phase 1 - Core Infrastructure ✅ **COMPLETE**
+**Current Phase:** Phase 2 - Scanner Engine ✅ **COMPLETE**
 
 ### ✅ Phase 1: Core Infrastructure & Messaging
 
@@ -103,17 +103,27 @@ pnpm package
 - [x] Background service worker with message routing
 - [x] Content script infrastructure
 - [x] Popup UI foundation
-- [x] Testing framework (Vitest with 36 passing tests)
+- [x] Testing framework (Vitest)
 - [x] Security implementation (validation, sanitization, XSS prevention)
 - [x] Documentation (Architecture, API specs)
 
+### ✅ Phase 2: Scanner Engine & Contract System
+
+- [x] Scanner contract interface (`ScannerContract`)
+- [x] Scanner registry (enable/disable, singleton pattern)
+- [x] Executor with parallel, sequential, and chunked strategies
+- [x] Result aggregator (deduplication, severity sorting)
+- [x] Orchestrator for high-level scan coordination
+- [x] All 6 scanners implemented (Dead Buttons, Broken Links, Missing Images, Overflow, Accessibility, Console Errors)
+- [x] Health score engine (severity-weighted, 0–100)
+- [x] 132 passing unit tests
+
 ### 📋 Upcoming Phases
 
-- [ ] **Phase 2:** Scanner Engine & Contract System
-- [ ] **Phase 3:** UI/UX Design & Popup Interface
-- [ ] **Phase 4:** Scanner Implementation - Set 1
-- [ ] **Phase 5:** Scanner Implementation - Set 2
-- [ ] **Phase 6:** Health Score Engine
+- [ ] **Phase 3:** Scan History View
+- [ ] **Phase 4:** Visual Highlights (outline issues on-page)
+- [ ] **Phase 5:** Export / Share Results
+- [ ] **Phase 6:** Chrome Web Store Deployment
 
 ## Project Structure
 
@@ -173,10 +183,11 @@ Before contributing, please review our [phased approach](./docs/PHASE_1_REPORT.m
 
 ## Documentation
 
-- [Phase 1 Report](./docs/PHASE_1_REPORT.md) - Complete implementation details
+- [Phase 1 Report](./docs/PHASE_1_REPORT.md) - Core infrastructure details
+- [Phase 2 Report](./PHASE_2_REPORT.md) - Scanner engine details
 - [Architecture](./docs/ARCHITECTURE.md) - System design and technical architecture
 
 ---
 
-**Phase 1 Complete** - June 2026  
+**Phase 2 Complete** - July 2026  
 Built with [Plasmo](https://www.plasmo.com/) • Powered by [React](https://react.dev/) • Secured by Design

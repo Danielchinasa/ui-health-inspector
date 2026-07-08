@@ -488,7 +488,7 @@ a {
 ========================================================== */
 
 .overview-panel {
-  height: 193px;
+  min-height: 193px;
   padding: 16px 13px 13px;
   background: rgba(255, 255, 255, 0.045);
   border: 1px solid var(--border);
@@ -548,6 +548,16 @@ a {
 
 .issue-card:hover {
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.048));
+}
+
+.issue-card.active {
+  border-color: rgba(60, 236, 85, 0.45);
+  box-shadow: inset 0 0 0 1px rgba(60, 236, 85, 0.26);
+}
+
+.issue-card:disabled {
+  cursor: default;
+  opacity: 0.7;
 }
 
 .issue-icon {
@@ -641,6 +651,131 @@ a {
   background: rgba(64, 227, 91, 0.16);
 }
 
+.issue-drilldown {
+  margin-top: 12px;
+  padding: 10px;
+  background: rgba(6, 11, 18, 0.54);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+}
+
+.issue-drilldown-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  color: #d7dbe4;
+  font-size: 11px;
+}
+
+.issue-drilldown-header span {
+  color: #a3a8b4;
+  font-weight: 700;
+}
+
+.issue-drilldown-list {
+  display: grid;
+  gap: 8px;
+  max-height: 164px;
+  overflow-y: auto;
+}
+
+.issue-drilldown-item {
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 7px;
+}
+
+.issue-drilldown-empty {
+  padding: 10px;
+  color: #aeb4c0;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px dashed rgba(255, 255, 255, 0.12);
+  border-radius: 7px;
+  font-size: 10px;
+  text-align: center;
+}
+
+.issue-drilldown-message {
+  color: #eef2f8;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.issue-drilldown-selector {
+  margin-top: 5px;
+  color: #7fd6ff;
+  font-size: 9px;
+  font-family:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New',
+    monospace;
+  word-break: break-all;
+}
+
+.issue-drilldown-recommendation {
+  margin-top: 6px;
+  color: #9ea4b0;
+  font-size: 9px;
+  line-height: 1.35;
+}
+
+.issue-detail-rows {
+  display: grid;
+  gap: 3px;
+  margin-top: 6px;
+  padding: 6px 8px;
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 5px;
+}
+
+.issue-detail-row {
+  display: flex;
+  gap: 6px;
+  align-items: baseline;
+  font-size: 9px;
+  line-height: 1.4;
+}
+
+.issue-detail-label {
+  flex-shrink: 0;
+  min-width: 46px;
+  color: #6b7280;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.issue-detail-value {
+  color: #c8cdd8;
+  word-break: break-all;
+}
+
+.issue-detail-value.mono {
+  color: #7fd6ff;
+  font-family:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New',
+    monospace;
+}
+
+.locate-btn {
+  margin-top: 7px;
+  padding: 5px 8px;
+  color: #eaf7ee;
+  cursor: pointer;
+  background: linear-gradient(180deg, #22cc43 0%, #16972f 100%);
+  border: 0;
+  border-radius: 5px;
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.locate-btn:disabled {
+  cursor: wait;
+  opacity: 0.74;
+}
+
 .error-banner {
   position: absolute;
   right: 16px;
@@ -697,6 +832,214 @@ a {
   50% {
     transform: scale(1.25);
   }
+}
+
+/* ==========================================================
+   Settings View
+========================================================== */
+
+.settings-view {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 4px 14px 16px;
+}
+
+.settings-section {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.settings-section-title {
+  padding: 7px 12px;
+  color: #6b7280;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.settings-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  cursor: pointer;
+  user-select: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  outline: none;
+  transition: background 0.15s;
+}
+
+.settings-row:last-child {
+  border-bottom: 0;
+}
+
+.settings-row:hover,
+.settings-row:focus-visible {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.settings-row--select {
+  cursor: default;
+}
+
+.settings-icon {
+  width: 26px !important;
+  height: 26px !important;
+  margin-bottom: 0 !important;
+  flex-shrink: 0;
+}
+
+.settings-row-label {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  color: #c8cdd8;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.settings-row-hint {
+  color: #6b7280;
+  font-size: 9px;
+  font-weight: 400;
+  line-height: 1.35;
+}
+
+/* Toggle switch */
+.settings-toggle {
+  position: relative;
+  width: 30px;
+  height: 16px;
+  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+
+.settings-toggle::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 12px;
+  height: 12px;
+  background: #9ca3af;
+  border-radius: 50%;
+  transition:
+    transform 0.2s,
+    background 0.2s;
+}
+
+.settings-toggle.on {
+  background: rgba(34, 197, 68, 0.28);
+}
+
+.settings-toggle.on::after {
+  background: #22cc44;
+  transform: translateX(14px);
+}
+
+/* Select */
+.settings-select {
+  padding: 4px 8px;
+  color: #c8cdd8;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  font-size: 10px;
+  outline: none;
+}
+
+.settings-select:focus {
+  border-color: rgba(255, 255, 255, 0.28);
+}
+
+/* Row right-side group (badge + toggle) */
+.settings-row-right {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-shrink: 0;
+}
+
+.settings-badge-soon {
+  padding: 2px 6px;
+  color: #f0a40b;
+  background: rgba(240, 164, 11, 0.14);
+  border: 1px solid rgba(240, 164, 11, 0.22);
+  border-radius: 4px;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* About section */
+.settings-about {
+  padding: 12px;
+}
+
+.settings-about-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.settings-about-icon {
+  font-size: 26px;
+  line-height: 1;
+}
+
+.settings-about-title {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.settings-about-name {
+  color: #eef2f8;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.settings-about-ver {
+  display: inline-block;
+  padding: 1px 6px;
+  color: #7c8899;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.settings-about-desc {
+  margin: 0 0 10px;
+  color: #7c8899;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.settings-about-footer {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  color: #555f6e;
+  font-size: 9px;
+}
+
+.settings-about-dot {
+  color: #3a4350;
 }
 
 /* ==========================================================
@@ -907,6 +1250,11 @@ a {
   background: linear-gradient(180deg, rgba(255, 255, 255, 1), rgba(240, 245, 249, 0.96));
 }
 
+[data-theme='light'] .issue-card.active {
+  border-color: rgba(27, 179, 58, 0.42);
+  box-shadow: inset 0 0 0 1px rgba(27, 179, 58, 0.24);
+}
+
 [data-theme='light'] .issue-count {
   color: #101820;
 }
@@ -960,6 +1308,63 @@ a {
   background: rgba(27, 179, 58, 0.13);
 }
 
+[data-theme='light'] .issue-drilldown {
+  background: rgba(255, 255, 255, 0.74);
+  border-color: rgba(20, 39, 57, 0.11);
+}
+
+[data-theme='light'] .issue-drilldown-header {
+  color: #182534;
+}
+
+[data-theme='light'] .issue-drilldown-header span {
+  color: #5e6b7b;
+}
+
+[data-theme='light'] .issue-drilldown-item {
+  background: rgba(20, 39, 57, 0.03);
+  border-color: rgba(20, 39, 57, 0.08);
+}
+
+[data-theme='light'] .issue-drilldown-empty {
+  color: #5e6b7b;
+  background: rgba(20, 39, 57, 0.015);
+  border-color: rgba(20, 39, 57, 0.14);
+}
+
+[data-theme='light'] .issue-drilldown-message {
+  color: #162331;
+}
+
+[data-theme='light'] .issue-drilldown-selector {
+  color: #186eab;
+}
+
+[data-theme='light'] .issue-drilldown-recommendation {
+  color: #5e6b7b;
+}
+
+[data-theme='light'] .issue-detail-rows {
+  background: rgba(0, 0, 0, 0.03);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+[data-theme='light'] .issue-detail-label {
+  color: #8a95a3;
+}
+
+[data-theme='light'] .issue-detail-value {
+  color: #374151;
+}
+
+[data-theme='light'] .issue-detail-value.mono {
+  color: #186eab;
+}
+
+[data-theme='light'] .locate-btn {
+  color: #ffffff;
+}
+
 [data-theme='light'] .error-banner {
   color: #c0392b;
   background: #fdf2f2;
@@ -969,4 +1374,63 @@ a {
 [data-theme='light'] .popup-footer {
   color: #7d8796;
   border-top-color: rgba(20, 39, 57, 0.08);
+}
+
+[data-theme='light'] .settings-section {
+  background: #ffffff;
+  border-color: rgba(20, 39, 57, 0.08);
+}
+
+[data-theme='light'] .settings-section-title {
+  color: #8a95a3;
+  border-bottom-color: rgba(20, 39, 57, 0.07);
+}
+
+[data-theme='light'] .settings-row {
+  border-bottom-color: rgba(20, 39, 57, 0.05);
+}
+
+[data-theme='light'] .settings-row:hover,
+[data-theme='light'] .settings-row:focus-visible {
+  background: rgba(20, 39, 57, 0.03);
+}
+
+[data-theme='light'] .settings-row-label {
+  color: #374151;
+}
+
+[data-theme='light'] .settings-row-hint {
+  color: #9ca3af;
+}
+
+[data-theme='light'] .settings-toggle {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+[data-theme='light'] .settings-select {
+  color: #374151;
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.12);
+}
+
+[data-theme='light'] .settings-about-name {
+  color: #1a2333;
+}
+
+[data-theme='light'] .settings-about-ver {
+  color: #5e6b7b;
+  background: rgba(0, 0, 0, 0.05);
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+[data-theme='light'] .settings-about-desc {
+  color: #5e6b7b;
+}
+
+[data-theme='light'] .settings-about-footer {
+  color: #8a95a3;
+}
+
+[data-theme='light'] .settings-about-dot {
+  color: #c5cdd8;
 }

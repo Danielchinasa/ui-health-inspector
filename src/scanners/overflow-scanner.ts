@@ -27,8 +27,10 @@ export class OverflowScanner extends BaseScanner {
     this.logger.info('Starting overflow scan');
     const issues: OverflowIssue[] = [];
 
-    // Get all elements
-    const elements = document.querySelectorAll('*');
+    // Narrow scanning to likely layout elements for better performance.
+    const elements = document.querySelectorAll<HTMLElement>(
+      'div, section, article, aside, main, nav, header, footer, img, video, table, pre, code, ul, ol, li, form, input, textarea, select, button, a'
+    );
 
     for (const element of Array.from(elements)) {
       const issue = this.checkElement(element as HTMLElement);
@@ -56,6 +58,14 @@ export class OverflowScanner extends BaseScanner {
     const rect = element.getBoundingClientRect();
     const style = window.getComputedStyle(element);
 
+    if (style.position === 'fixed' || style.position === 'sticky') {
+      return null;
+    }
+
+    if (rect.width <= 0 || rect.height <= 0) {
+      return null;
+    }
+
     // Check for horizontal overflow
     if (element.scrollWidth > element.clientWidth) {
       const overflowAmount = element.scrollWidth - element.clientWidth;
@@ -65,7 +75,8 @@ export class OverflowScanner extends BaseScanner {
         overflowAmount > 5 &&
         style.overflowX !== 'auto' &&
         style.overflowX !== 'scroll' &&
-        style.overflowX !== 'hidden'
+        style.overflowX !== 'hidden' &&
+        style.overflowX !== 'clip'
       ) {
         return this.createIssue(
           element,
@@ -80,7 +91,7 @@ export class OverflowScanner extends BaseScanner {
 
     // Check if element extends beyond viewport
     const viewportWidth = window.innerWidth;
-    if (rect.right > viewportWidth + 10) {
+    if (rect.right > viewportWidth + 10 && rect.left < viewportWidth) {
       const overflowAmount = Math.round(rect.right - viewportWidth);
       return this.createIssue(
         element,

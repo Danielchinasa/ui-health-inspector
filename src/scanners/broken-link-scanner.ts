@@ -59,23 +59,40 @@ export class BrokenLinkScanner extends BaseScanner {
       return this.createIssue(link, href, 'empty_href', 'Link has empty href attribute');
     }
 
+    const normalizedHref = href.trim();
+
     // Check for javascript:void(0) or similar
-    if (href === 'javascript:void(0)' || href === 'javascript:;' || href === 'javascript:') {
+    if (
+      normalizedHref === 'javascript:void(0)' ||
+      normalizedHref === 'javascript:;' ||
+      normalizedHref === 'javascript:' ||
+      normalizedHref.toLowerCase().startsWith('javascript:void')
+    ) {
       return this.createIssue(
         link,
-        href,
+        normalizedHref,
         'javascript_void',
         'Link uses javascript:void instead of proper navigation'
       );
     }
 
+    // Inline javascript URLs are unsafe and not valid navigation.
+    if (normalizedHref.toLowerCase().startsWith('javascript:')) {
+      return this.createIssue(
+        link,
+        normalizedHref,
+        'javascript_void',
+        'Link uses javascript: URL instead of proper navigation'
+      );
+    }
+
     // Check for anchor-only links (just #)
-    if (href === '#') {
+    if (normalizedHref === '#') {
       // Only flag if there's no click handler
       if (!this.hasEventHandler(link)) {
         return this.createIssue(
           link,
-          href,
+          normalizedHref,
           'anchor_only',
           'Link href is just "#" with no event handler'
         );
@@ -83,8 +100,8 @@ export class BrokenLinkScanner extends BaseScanner {
     }
 
     // Check for malformed URLs
-    if (this.isMalformedUrl(href)) {
-      return this.createIssue(link, href, 'malformed_url', 'Link has malformed URL');
+    if (this.isMalformedUrl(normalizedHref)) {
+      return this.createIssue(link, normalizedHref, 'malformed_url', 'Link has malformed URL');
     }
 
     return null;
@@ -137,12 +154,13 @@ export class BrokenLinkScanner extends BaseScanner {
       return false;
     }
 
-    // Skip mailto:, tel:, and other protocols
+    // Skip known non-http schemes used for valid navigation/actions
     if (
       href.startsWith('mailto:') ||
       href.startsWith('tel:') ||
       href.startsWith('sms:') ||
-      href.startsWith('data:')
+      href.startsWith('data:') ||
+      href.startsWith('blob:')
     ) {
       return false;
     }
@@ -152,32 +170,20 @@ export class BrokenLinkScanner extends BaseScanner {
       return false;
     }
 
-    // Check for absolute URLs
-    if (href.startsWith('http://') || href.startsWith('https://')) {
-      try {
-        new URL(href);
-        return false; // Valid URL
-      } catch {
-        return true; // Malformed URL
-      }
-    }
+    // Parse URLs using the current document URL as a base to cover absolute and relative cases.
+    try {
+      const parsed = new URL(href, window.location.href);
+      const protocol = parsed.protocol.toLowerCase();
 
-    // Check for protocol-relative URLs
-    if (href.startsWith('//')) {
-      try {
-        new URL(`https:${href}`);
-        return false;
-      } catch {
+      const allowedProtocols = ['http:', 'https:', 'mailto:', 'tel:', 'sms:', 'data:', 'blob:'];
+      if (!allowedProtocols.includes(protocol)) {
         return true;
       }
-    }
 
-    // If it contains invalid characters or patterns
-    if (href.includes('><') || href.includes('javascript:alert') || /^ht[^t]/.test(href)) {
+      return false;
+    } catch {
       return true;
     }
-
-    return false;
   }
 
   private createIssue(

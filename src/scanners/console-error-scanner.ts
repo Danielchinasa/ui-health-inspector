@@ -12,18 +12,23 @@ import { BaseScanner } from './base-scanner';
  * Scanner that captures console errors and warnings
  */
 export class ConsoleErrorScanner extends BaseScanner {
+  private static globalErrors: Array<{
+    type: 'error' | 'warning';
+    message: string;
+    stack?: string;
+    timestamp: number;
+  }> = [];
+  private static listenersSetup = false;
+  private static capturing = false;
+  private static originalConsoleError: typeof console.error;
+  private static originalConsoleWarn: typeof console.warn;
+
   private errors: Array<{
     type: 'error' | 'warning';
     message: string;
     stack?: string;
     timestamp: number;
   }> = [];
-
-  private originalConsoleError: typeof console.error;
-  private originalConsoleWarn: typeof console.warn;
-  private originalConsoleLog: typeof console.log;
-  private isSetup = false;
-  private isCapturing = false; // Prevent infinite recursion
 
   constructor() {
     super(
@@ -33,35 +38,33 @@ export class ConsoleErrorScanner extends BaseScanner {
       100
     );
 
-    // Store original console methods BEFORE any interception
-    this.originalConsoleError = console.error.bind(console);
-    this.originalConsoleWarn = console.warn.bind(console);
-    this.originalConsoleLog = console.log.bind(console);
-
-    // Set up error listeners immediately
+    // Set up shared listeners once, then all scanner instances read from shared state.
     this.setupErrorListeners();
   }
 
   private setupErrorListeners() {
-    if (this.isSetup) {
+    if (ConsoleErrorScanner.listenersSetup) {
       return;
     }
-    this.isSetup = true;
+    ConsoleErrorScanner.listenersSetup = true;
+
+    ConsoleErrorScanner.originalConsoleError = console.error.bind(console);
+    ConsoleErrorScanner.originalConsoleWarn = console.warn.bind(console);
 
     // Intercept console.error
     console.error = (...args: any[]) => {
-      if (!this.isCapturing) {
+      if (!ConsoleErrorScanner.capturing) {
         this.captureError('error', args);
       }
-      this.originalConsoleError(...args);
+      ConsoleErrorScanner.originalConsoleError(...args);
     };
 
     // Intercept console.warn
     console.warn = (...args: any[]) => {
-      if (!this.isCapturing) {
+      if (!ConsoleErrorScanner.capturing) {
         this.captureError('warning', args);
       }
-      this.originalConsoleWarn(...args);
+      ConsoleErrorScanner.originalConsoleWarn(...args);
     };
 
     // DON'T intercept console.log - too risky for infinite loops
@@ -69,22 +72,22 @@ export class ConsoleErrorScanner extends BaseScanner {
 
     // Listen for unhandled errors
     window.addEventListener('error', (event) => {
-      if (!this.isCapturing) {
-        this.isCapturing = true;
-        this.errors.push({
+      if (!ConsoleErrorScanner.capturing) {
+        ConsoleErrorScanner.capturing = true;
+        ConsoleErrorScanner.globalErrors.push({
           type: 'error',
           message: event.message,
           stack: event.error?.stack,
           timestamp: Date.now(),
         });
-        this.isCapturing = false;
+        ConsoleErrorScanner.capturing = false;
       }
     });
 
     // Listen for unhandled promise rejections
     window.addEventListener('unhandledrejection', (event) => {
-      if (!this.isCapturing) {
-        this.isCapturing = true;
+      if (!ConsoleErrorScanner.capturing) {
+        ConsoleErrorScanner.capturing = true;
 
         let message = 'Unhandled Promise Rejection';
         let stack: string | undefined;
@@ -102,25 +105,25 @@ export class ConsoleErrorScanner extends BaseScanner {
           }
         }
 
-        this.errors.push({
+        ConsoleErrorScanner.globalErrors.push({
           type: 'error',
           message,
           stack,
           timestamp: Date.now(),
         });
 
-        this.isCapturing = false;
+        ConsoleErrorScanner.capturing = false;
       }
     });
   }
 
   private captureError(type: 'error' | 'warning', args: any[]) {
     // Prevent infinite recursion
-    if (this.isCapturing) {
+    if (ConsoleErrorScanner.capturing) {
       return;
     }
 
-    this.isCapturing = true;
+    ConsoleErrorScanner.capturing = true;
 
     try {
       const message = args
@@ -142,18 +145,20 @@ export class ConsoleErrorScanner extends BaseScanner {
         stack = errorArg.stack;
       }
 
-      this.errors.push({
+      ConsoleErrorScanner.globalErrors.push({
         type,
         message,
         stack,
         timestamp: Date.now(),
       });
     } finally {
-      this.isCapturing = false;
+      ConsoleErrorScanner.capturing = false;
     }
   }
 
   async scan(): Promise<ConsoleErrorIssue[]> {
+    this.errors = [...ConsoleErrorScanner.globalErrors];
+
     const issues: ConsoleErrorIssue[] = [];
 
     // Group similar errors
@@ -208,7 +213,11 @@ export class ConsoleErrorScanner extends BaseScanner {
     const displayMessage = count > 1 ? `${truncatedMessage} (${count}x)` : truncatedMessage;
 
     return {
-      id: `console-error-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      id: `console-error-${Date.now()}-${
+        typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+          ? crypto.randomUUID()
+          : Math.random().toString(36).slice(2)
+      }`,
       type: IssueType.CONSOLE_ERROR,
       severity: errorType === 'exception' ? IssueSeverity.HIGH : IssueSeverity.LOW,
       message: displayMessage,
