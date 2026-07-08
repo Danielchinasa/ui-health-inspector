@@ -108,14 +108,22 @@ export class AccessibilityScanner extends BaseScanner {
       }
 
       // Check if wrapped in label
-      const parent = element.parentElement;
-      if (parent && parent.tagName === 'LABEL') {
+      const wrappedLabel = element.closest('label');
+      if (wrappedLabel) {
         hasLabel = true;
       }
 
       // Check ARIA attributes
-      if (ariaLabel || ariaLabelledBy || title) {
+      if (ariaLabel || title) {
         hasLabel = true;
+      }
+
+      if (ariaLabelledBy) {
+        const ids = ariaLabelledBy
+          .split(/\s+/)
+          .map((idRef) => idRef.trim())
+          .filter(Boolean);
+        hasLabel = ids.some((idRef) => document.getElementById(idRef) !== null);
       }
 
       if (!hasLabel) {
@@ -145,9 +153,11 @@ export class AccessibilityScanner extends BaseScanner {
       const ariaLabel = element.getAttribute('aria-label');
       const ariaLabelledBy = element.getAttribute('aria-labelledby');
       const title = element.getAttribute('title');
+      const hasNamedIcon =
+        element.querySelector('svg[aria-label], img[alt]:not([alt=""])') !== null;
 
       // Check if button has accessible name
-      if (!text && !ariaLabel && !ariaLabelledBy && !title) {
+      if (!text && !ariaLabel && !ariaLabelledBy && !title && !hasNamedIcon) {
         issues.push(
           this.createIssue(
             element,
@@ -202,9 +212,11 @@ export class AccessibilityScanner extends BaseScanner {
       const text = link.textContent?.trim() || '';
       const ariaLabel = link.getAttribute('aria-label');
       const title = link.getAttribute('title');
+      const hasNamedImage = link.querySelector('img[alt]:not([alt=""])') !== null;
+      const hasNamedSvg = link.querySelector('svg[aria-label], svg title') !== null;
 
       // Check for links without text
-      if (!text && !ariaLabel && !title) {
+      if (!text && !ariaLabel && !title && !hasNamedImage && !hasNamedSvg) {
         issues.push(
           this.createIssue(link, 'missing_aria_label', 'Link has no text or accessible name', 'A')
         );

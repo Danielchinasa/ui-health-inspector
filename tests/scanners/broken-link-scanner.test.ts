@@ -24,7 +24,7 @@ describe('BrokenLinkScanner', () => {
       (global.window as any).CSS = {};
     }
     if (!(global.window as any).CSS.escape) {
-      (global.window as any).CSS.escape = (str: string) => str.replace(/(["#.:,\[\]>])/g, '\\$1');
+      (global.window as any).CSS.escape = (str: string) => str.replace(/(["#.:,[]>])/g, '\\$1');
     }
     global.CSS = (global.window as any).CSS;
   });

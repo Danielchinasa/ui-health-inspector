@@ -148,6 +148,10 @@ export class DeadButtonScanner extends BaseScanner {
   }
 
   private isVisible(element: HTMLElement): boolean {
+    if (element.hasAttribute('hidden') || element.getAttribute('aria-hidden') === 'true') {
+      return false;
+    }
+
     // Check inline styles first (more reliable in tests)
     const inlineStyle = element.style;
     if (
@@ -246,6 +250,15 @@ export class DeadButtonScanner extends BaseScanner {
       }
     }
 
+    // Framework-bound declarative handlers.
+    if (
+      element.hasAttribute('data-action') ||
+      element.hasAttribute('x-on:click') ||
+      element.hasAttribute('@click')
+    ) {
+      return true;
+    }
+
     // Check if element is inside a form with action
     if (this.isInsideFormWithAction(element)) {
       return true;
@@ -255,12 +268,28 @@ export class DeadButtonScanner extends BaseScanner {
   }
 
   private hasFormAction(element: HTMLElement): boolean {
-    if (element.tagName === 'BUTTON' || element.tagName === 'INPUT') {
-      const form = (element as HTMLButtonElement | HTMLInputElement).form;
-      if (form && form.action) {
-        return true;
-      }
+    if (element.tagName !== 'BUTTON' && element.tagName !== 'INPUT') {
+      return false;
     }
+
+    const control = element as HTMLButtonElement | HTMLInputElement;
+    const form = control.form;
+
+    if (!form) {
+      return false;
+    }
+
+    // Submit/reset controls are functional as long as they are associated with a form.
+    const type = ((control.getAttribute('type') || '').toLowerCase() ||
+      (element.tagName === 'BUTTON' ? 'submit' : 'text')) as string;
+    if (type === 'submit' || type === 'reset') {
+      return true;
+    }
+
+    if (form.action) {
+      return true;
+    }
+
     return false;
   }
 

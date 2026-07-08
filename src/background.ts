@@ -20,18 +20,18 @@ chrome.runtime.onInstalled.addListener(async (details) => {
   logger.info('Extension installed:', details);
 
   if (details.reason === 'install') {
-    // First-time installation
+    // First-time installation — write defaults including autoScan: false
     logger.info('First-time installation detected');
-
-    // Initialize default settings
-    await storageManager.updateSettings({});
+    await storageManager.updateSettings({ autoScan: false });
     logger.info('Default settings initialized');
   } else if (details.reason === 'update') {
-    // Extension updated
+    // Extension updated — always reset autoScan to false so it never fires unexpectedly
     const previousVersion = details.previousVersion;
     logger.info(
       `Extension updated from ${previousVersion} to ${chrome.runtime.getManifest().version}`
     );
+    await storageManager.updateSettings({ autoScan: false });
+    logger.info('Reset autoScan to false after update');
   }
 });
 
@@ -74,11 +74,7 @@ onMessage(async (message: Message, sender) => {
       case MessageType.TOGGLE_HIGHLIGHTS:
       case MessageType.CLEAR_HIGHLIGHTS:
       case MessageType.FOCUS_ISSUE:
-        // Forward to content script
-        if (sender.tab?.id) {
-          return await sendToTab(sender.tab.id, message);
-        }
-        throw new Error('No active tab');
+        return await forwardToTargetTab(message, sender.tab?.id);
 
       default:
         logger.warn('Unknown message type:', message.type);
@@ -255,6 +251,20 @@ async function handleStartScan(tabId?: number) {
     logger.error('Scan failed:', error);
     throw error;
   }
+}
+
+async function forwardToTargetTab(message: Message, senderTabId?: number) {
+  let targetTabId = senderTabId;
+
+  if (!targetTabId) {
+    const [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    if (!activeTab?.id) {
+      throw new Error('No active tab found');
+    }
+    targetTabId = activeTab.id;
+  }
+
+  return sendToTab(targetTabId, message);
 }
 
 /**

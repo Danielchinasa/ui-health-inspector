@@ -38,25 +38,39 @@ export async function executeScanner(
       throw new ExtensionError(ErrorCode.SCAN_FAILED, 'Scan aborted');
     }
 
-    // Execute with timeout
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
+    let abortListener: (() => void) | undefined;
+
+    // Execute with timeout and abort support, with explicit cleanup to avoid leaking listeners.
     const issues = await Promise.race([
       scanner.scan(),
-      new Promise<never>((_, reject) =>
-        setTimeout(
-          () => reject(new ExtensionError(ErrorCode.SCAN_TIMEOUT, 'Scanner timeout')),
-          timeout
-        )
-      ),
+      new Promise<never>((_, reject) => {
+        timeoutId = setTimeout(() => {
+          reject(new ExtensionError(ErrorCode.SCAN_TIMEOUT, 'Scanner timeout'));
+        }, timeout);
+      }),
       ...(abortSignal
         ? [
             new Promise<never>((_, reject) => {
-              abortSignal.addEventListener('abort', () => {
+              abortListener = () => {
                 reject(new ExtensionError(ErrorCode.SCAN_FAILED, 'Scan aborted'));
+              };
+
+              abortSignal.addEventListener('abort', abortListener as EventListener, {
+                once: true,
               });
             }),
           ]
         : []),
-    ]);
+    ]).finally(() => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+
+      if (abortSignal && abortListener) {
+        abortSignal.removeEventListener('abort', abortListener as EventListener);
+      }
+    });
 
     const executionTime = perfMonitor.end(perfLabel);
 

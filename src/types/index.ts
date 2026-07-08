@@ -77,6 +77,7 @@ export interface FocusIssueMessage extends BaseMessage {
   payload: {
     issueId: string;
     issueType: IssueType;
+    element?: ElementInfo;
   };
 }
 
@@ -163,7 +164,7 @@ export interface ElementInfo {
 
 export interface DeadButtonIssue extends BaseIssue {
   type: IssueType.DEAD_BUTTON;
-  severity: IssueSeverity.HIGH;
+  severity: IssueSeverity;
   reason:
     | 'empty_onclick'
     | 'hash_href'
@@ -175,21 +176,21 @@ export interface DeadButtonIssue extends BaseIssue {
 
 export interface BrokenLinkIssue extends BaseIssue {
   type: IssueType.BROKEN_LINK;
-  severity: IssueSeverity.HIGH;
+  severity: IssueSeverity;
   href: string;
   reason: 'empty_href' | 'malformed_url' | 'anchor_only' | 'javascript_void';
 }
 
 export interface MissingImageIssue extends BaseIssue {
   type: IssueType.MISSING_IMAGE;
-  severity: IssueSeverity.MEDIUM;
+  severity: IssueSeverity;
   src?: string;
   reason: 'missing_src' | 'failed_load' | 'empty_src';
 }
 
 export interface OverflowIssue extends BaseIssue {
   type: IssueType.OVERFLOW;
-  severity: IssueSeverity.MEDIUM;
+  severity: IssueSeverity;
   scrollWidth: number;
   clientWidth: number;
   overflowAmount: number;
@@ -197,14 +198,14 @@ export interface OverflowIssue extends BaseIssue {
 
 export interface AccessibilityIssue extends BaseIssue {
   type: IssueType.ACCESSIBILITY;
-  severity: IssueSeverity.MEDIUM;
+  severity: IssueSeverity;
   reason: 'missing_alt' | 'missing_label' | 'empty_button' | 'missing_aria_label' | 'low_contrast';
   wcagLevel?: 'A' | 'AA' | 'AAA';
 }
 
 export interface ConsoleErrorIssue extends BaseIssue {
   type: IssueType.CONSOLE_ERROR;
-  severity: IssueSeverity.LOW;
+  severity: IssueSeverity;
   errorMessage: string;
   errorType: 'exception' | 'network' | 'security' | 'other';
   stack?: string;

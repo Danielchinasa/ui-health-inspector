@@ -48,12 +48,24 @@ export function aggregateResults(
 
   // Build issue collection
   const issues: IssueCollection = {
-    deadButtons: (issuesByType.DEAD_BUTTON || []) as DeadButtonIssue[],
-    brokenLinks: (issuesByType.BROKEN_LINK || []) as BrokenLinkIssue[],
-    missingImages: (issuesByType.MISSING_IMAGE || []) as MissingImageIssue[],
-    overflowIssues: (issuesByType.OVERFLOW || []) as OverflowIssue[],
-    accessibility: (issuesByType.ACCESSIBILITY || []) as AccessibilityIssue[],
-    consoleErrors: (issuesByType.CONSOLE_ERROR || []) as ConsoleErrorIssue[],
+    deadButtons: sortIssuesBySeverity(
+      deduplicateIssues((issuesByType.DEAD_BUTTON || []) as DeadButtonIssue[])
+    ) as DeadButtonIssue[],
+    brokenLinks: sortIssuesBySeverity(
+      deduplicateIssues((issuesByType.BROKEN_LINK || []) as BrokenLinkIssue[])
+    ) as BrokenLinkIssue[],
+    missingImages: sortIssuesBySeverity(
+      deduplicateIssues((issuesByType.MISSING_IMAGE || []) as MissingImageIssue[])
+    ) as MissingImageIssue[],
+    overflowIssues: sortIssuesBySeverity(
+      deduplicateIssues((issuesByType.OVERFLOW || []) as OverflowIssue[])
+    ) as OverflowIssue[],
+    accessibility: sortIssuesBySeverity(
+      deduplicateIssues((issuesByType.ACCESSIBILITY || []) as AccessibilityIssue[])
+    ) as AccessibilityIssue[],
+    consoleErrors: sortIssuesBySeverity(
+      deduplicateIssues((issuesByType.CONSOLE_ERROR || []) as ConsoleErrorIssue[])
+    ) as ConsoleErrorIssue[],
   };
 
   // Calculate metadata
@@ -66,11 +78,17 @@ export function aggregateResults(
       userAgent: pageMetadata.userAgent,
       viewport: pageMetadata.viewport,
     },
-    totalIssues: Object.values(issuesByType).reduce((sum, arr) => sum + arr.length, 0),
+    totalIssues:
+      issues.deadButtons.length +
+      issues.brokenLinks.length +
+      issues.missingImages.length +
+      issues.overflowIssues.length +
+      issues.accessibility.length +
+      issues.consoleErrors.length,
     executionTime: totalExecutionTime,
   };
 
-  // Calculate health score (will be enhanced in Phase 6)
+  // Calculate health score
   const healthScore = calculateHealthScore(issues);
 
   const result: ScanResult = {
